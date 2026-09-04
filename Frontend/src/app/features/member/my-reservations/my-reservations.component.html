@@ -1,0 +1,47 @@
+<div class="container">
+  <div class="mb-1">
+    <h1>My Reservations</h1>
+    <p class="mb-0">Books you've put on hold.</p>
+  </div>
+
+  @if (loading) {
+    <div class="spinner"></div>
+  } @else if (reservations.length === 0) {
+    <div class="empty-state card">
+      <app-icon name="bookmark" [size]="36"></app-icon>
+      <p>You haven't reserved any books. <a routerLink="/">Browse the catalog</a> to find something.</p>
+    </div>
+  } @else {
+    <div class="reservation-cards">
+      @for (res of reservations; track res._id) {
+        <div class="card reservation-card">
+          <div class="reservation-cover">
+            @if (asBook(res.book)?.coverImage) {
+              <img [src]="asBook(res.book)?.coverImage | bookCover" [alt]="asBook(res.book)?.title" />
+            } @else {
+              <app-icon name="book-open" [size]="18"></app-icon>
+            }
+          </div>
+          <div class="reservation-info">
+            <h3>{{ asBook(res.book)?.title || 'Unknown book' }}</h3>
+            <p class="mb-0 requested-date">
+              <app-icon name="calendar" [size]="13"></app-icon>
+              Requested {{ res.requestDate | date: 'mediumDate' }}
+            </p>
+            @switch (res.status) {
+              @case ('pending') { <span class="badge badge-warning">Pending</span> }
+              @case ('ready') { <span class="badge badge-success">Ready for pickup</span> }
+              @case ('cancelled') { <span class="badge badge-neutral">Cancelled</span> }
+              @case ('fulfilled') { <span class="badge badge-neutral">Fulfilled</span> }
+            }
+          </div>
+          @if (res.status === 'pending' || res.status === 'ready') {
+            <button class="btn btn-danger btn-sm" (click)="cancel(res)">
+              <app-icon name="x" [size]="13"></app-icon> Cancel
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

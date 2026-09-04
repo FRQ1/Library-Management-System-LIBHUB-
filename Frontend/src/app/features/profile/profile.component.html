@@ -1,0 +1,91 @@
+<div class="container profile-page">
+  <div class="mb-1">
+    <h1>Profile</h1>
+    <p class="mb-0">Manage your account details and preferences.</p>
+  </div>
+
+  <div class="card mb-1 picture-card">
+    <div class="avatar-preview">
+      @if (previewUrl) {
+        <img [src]="previewUrl" alt="Preview" />
+      } @else if (auth.currentUser()?.profilePicture) {
+        <img [src]="auth.currentUser()?.profilePicture | userAvatar" alt="Profile picture" />
+      } @else {
+        <div class="avatar-placeholder">{{ auth.currentUser()?.name?.charAt(0) }}</div>
+      }
+    </div>
+
+    <div class="picture-controls">
+      <h3 class="mb-0">Profile picture</h3>
+      <p class="picture-hint">JPG, PNG or WEBP, up to 5MB</p>
+
+      @if (pictureMessage) {
+        <div class="alert" [class.alert-danger]="pictureError" [class.alert-success]="!pictureError">
+          <app-icon [name]="pictureError ? 'alert-circle' : 'check-circle'" [size]="16"></app-icon>
+          {{ pictureMessage }}
+        </div>
+      }
+
+      <label class="file-picker" for="profilePicture">
+        <app-icon name="upload" [size]="15"></app-icon>
+        Choose image
+      </label>
+      <input id="profilePicture" type="file" accept="image/jpeg,image/png,image/webp" class="visually-hidden" (change)="onFileSelected($event)" />
+
+      <button class="btn btn-primary btn-sm mt-1" [disabled]="!selectedFile || pictureLoading" (click)="uploadPicture()">
+        <app-icon name="check" [size]="14"></app-icon>
+        {{ pictureLoading ? 'Uploading...' : 'Upload picture' }}
+      </button>
+    </div>
+  </div>
+
+  <form class="card mb-1" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+    <h3>Profile details</h3>
+
+    @if (profileMessage) {
+      <div class="alert" [class.alert-danger]="profileError" [class.alert-success]="!profileError">
+        <app-icon [name]="profileError ? 'alert-circle' : 'check-circle'" [size]="16"></app-icon>
+        {{ profileMessage }}
+      </div>
+    }
+
+    <div class="form-group">
+      <label for="name">Name</label>
+      <input id="name" type="text" class="form-control" formControlName="name" />
+    </div>
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input id="email" type="email" class="form-control" formControlName="email" />
+    </div>
+
+    <button type="submit" class="btn btn-primary" [disabled]="profileLoading">
+      <app-icon name="check" [size]="15"></app-icon>
+      {{ profileLoading ? 'Saving...' : 'Save changes' }}
+    </button>
+  </form>
+
+  <form class="card" [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+    <h3>Change password</h3>
+
+    @if (passwordMessage) {
+      <div class="alert" [class.alert-danger]="passwordError" [class.alert-success]="!passwordError">
+        <app-icon [name]="passwordError ? 'alert-circle' : 'check-circle'" [size]="16"></app-icon>
+        {{ passwordMessage }}
+      </div>
+    }
+
+    <div class="form-group">
+      <label for="currentPassword">Current password</label>
+      <input id="currentPassword" type="password" class="form-control" formControlName="currentPassword" />
+    </div>
+    <div class="form-group">
+      <label for="newPassword">New password</label>
+      <input id="newPassword" type="password" class="form-control" formControlName="newPassword" />
+    </div>
+
+    <button type="submit" class="btn btn-primary" [disabled]="passwordLoading">
+      <app-icon name="check" [size]="15"></app-icon>
+      {{ passwordLoading ? 'Changing...' : 'Change password' }}
+    </button>
+  </form>
+</div>

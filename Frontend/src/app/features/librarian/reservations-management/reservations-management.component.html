@@ -1,0 +1,62 @@
+<div class="dashboard-layout">
+  <app-sidebar [links]="sidebarLinks" title="Librarian"></app-sidebar>
+
+  <div class="dashboard-content">
+    <div class="mb-1">
+      <h1>Reservations</h1>
+      <p class="mb-0">Manage member holds and pickups.</p>
+    </div>
+
+    @if (loading) {
+      <div class="spinner"></div>
+    } @else if (reservations.length === 0) {
+      <div class="empty-state">
+        <app-icon name="bookmark" [size]="36"></app-icon>
+        <p>No reservations to show.</p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Book</th>
+              <th>Date Requested</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (res of reservations; track res._id) {
+              <tr>
+                <td>{{ asUser(res.member)?.name || 'Unknown' }}</td>
+                <td>{{ asBook(res.book)?.title || 'Unknown' }}</td>
+                <td>{{ res.requestDate | date: 'mediumDate' }}</td>
+                <td>
+                  @switch (res.status) {
+                    @case ('pending') { <span class="badge badge-warning">Pending</span> }
+                    @case ('ready') { <span class="badge badge-success">Ready for pickup</span> }
+                    @case ('cancelled') { <span class="badge badge-neutral">Cancelled</span> }
+                    @case ('fulfilled') { <span class="badge badge-neutral">Fulfilled</span> }
+                  }
+                </td>
+                <td>
+                  @if (res.status === 'pending') {
+                    <div class="flex gap-sm">
+                      <button class="btn btn-primary btn-sm" (click)="markReady(res)">
+                        <app-icon name="check" [size]="13"></app-icon> Mark Ready
+                      </button>
+                      <button class="btn btn-danger btn-sm" (click)="cancel(res)">
+                        <app-icon name="x" [size]="13"></app-icon> Cancel
+                      </button>
+                    </div>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

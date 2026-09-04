@@ -1,0 +1,87 @@
+<div class="container">
+  @if (loading) {
+    <div class="spinner"></div>
+  } @else if (errorMessage) {
+    <div class="alert alert-danger">
+      <app-icon name="alert-circle" [size]="18"></app-icon>
+      {{ errorMessage }}
+    </div>
+  } @else if (book) {
+    <a routerLink="/" class="back-link">
+      <app-icon name="arrow-left" [size]="15"></app-icon> Back to catalog
+    </a>
+
+    <div class="book-details card">
+      <div class="book-details-cover">
+        @if (book.coverImage) {
+          <img [src]="book.coverImage | bookCover" [alt]="book.title" />
+        } @else {
+          <div class="book-cover-placeholder">
+            <app-icon name="book-open" [size]="44"></app-icon>
+          </div>
+        }
+      </div>
+
+      <div class="book-details-info">
+        <h1>{{ book.title }}</h1>
+        <p class="book-details-author">by {{ book.author }}</p>
+
+        <div class="flex gap-sm mb-1">
+          @if (book.availableCopies > 0) {
+            <span class="badge badge-success">
+              <app-icon name="check-circle" [size]="12"></app-icon>
+              Available ({{ book.availableCopies }}/{{ book.totalCopies }})
+            </span>
+          } @else {
+            <span class="badge badge-danger">
+              <app-icon name="clock" [size]="12"></app-icon> Checked out
+            </span>
+          }
+          <span class="badge badge-neutral">{{ book.category }}</span>
+        </div>
+
+        <dl class="book-meta">
+          <dt>ISBN</dt>
+          <dd>{{ book.isbn }}</dd>
+        </dl>
+
+        @if (book.description) {
+          <h3 class="mt-1">Description</h3>
+          <p>{{ book.description }}</p>
+        }
+
+        @if (reserveMessage) {
+          <div class="alert" [class.alert-danger]="reserveError" [class.alert-success]="!reserveError">
+            <app-icon [name]="reserveError ? 'alert-circle' : 'check-circle'" [size]="18"></app-icon>
+            {{ reserveMessage }}
+          </div>
+        }
+
+        <div class="book-actions mt-1">
+          @if (auth.role() === 'member') {
+            <button class="btn btn-primary" (click)="reserve()" [disabled]="reserving">
+              <app-icon name="bookmark" [size]="16"></app-icon>
+              {{ reserving ? 'Reserving...' : 'Reserve this book' }}
+            </button>
+          } @else if (!auth.isLoggedIn()) {
+            <a routerLink="/login" class="btn btn-primary">
+              <app-icon name="log-in" [size]="16"></app-icon> Log in to reserve
+            </a>
+          }
+
+          @if (auth.role() === 'librarian' || auth.role() === 'admin') {
+            <a [routerLink]="['/librarian/books', book._id, 'edit']" class="btn btn-secondary">
+              <app-icon name="pencil" [size]="15"></app-icon> Edit book
+            </a>
+            <button class="btn btn-danger" (click)="deleteBook()">
+              <app-icon name="trash-2" [size]="15"></app-icon> Delete book
+            </button>
+            <a routerLink="/librarian/loans" class="btn btn-secondary">
+              <app-icon name="refresh-cw" [size]="15"></app-icon> Check out to member
+            </a>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

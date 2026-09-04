@@ -1,0 +1,101 @@
+<div class="dashboard-layout">
+  <app-sidebar [links]="sidebarLinks" title="Admin"></app-sidebar>
+
+  <div class="dashboard-content">
+    <div class="mb-1">
+      <h1>Admin Dashboard</h1>
+      <p class="mb-0">Manage users, roles, and view system-wide reports.</p>
+    </div>
+
+    <div class="tabs mb-1">
+      <button class="tab" [class.tab-active]="activeTab === 'users'" (click)="setTab('users')">
+        <app-icon name="user" [size]="15"></app-icon> Users
+      </button>
+      <button class="tab" [class.tab-active]="activeTab === 'librarians'" (click)="setTab('librarians')">
+        <app-icon name="shield-check" [size]="15"></app-icon> Librarians
+      </button>
+      <button class="tab" [class.tab-active]="activeTab === 'reports'" (click)="setTab('reports')">
+        <app-icon name="bar-chart" [size]="15"></app-icon> Reports
+      </button>
+    </div>
+
+    @if (activeTab === 'reports') {
+      @if (loadingReports) {
+        <div class="spinner"></div>
+      } @else {
+        <div class="metric-cards">
+          <div class="card metric-card">
+            <div class="metric-icon"><app-icon name="book-open" [size]="20"></app-icon></div>
+            <span class="metric-value">{{ reports.totalBooks }}</span>
+            <span class="metric-label">Total Books</span>
+          </div>
+          <div class="card metric-card">
+            <div class="metric-icon"><app-icon name="refresh-cw" [size]="20"></app-icon></div>
+            <span class="metric-value">{{ reports.activeLoans }}</span>
+            <span class="metric-label">Active Loans</span>
+          </div>
+          <div class="card metric-card">
+            <div class="metric-icon metric-icon-danger"><app-icon name="clock" [size]="20"></app-icon></div>
+            <span class="metric-value">{{ reports.overdueLoans }}</span>
+            <span class="metric-label">Overdue Books</span>
+          </div>
+          <div class="card metric-card">
+            <div class="metric-icon"><app-icon name="user-circle" [size]="20"></app-icon></div>
+            <span class="metric-value">{{ reports.activeUsers }}</span>
+            <span class="metric-label">Active Users</span>
+          </div>
+        </div>
+      }
+    } @else {
+      @if (loadingUsers) {
+        <div class="spinner"></div>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of (activeTab === 'librarians' ? librarians : users); track user.id) {
+                <tr>
+                  <td>{{ user.name }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>
+                    <select class="form-control role-select" [value]="user.role" (change)="changeRole(user, $any($event.target).value)">
+                      <option value="member">member</option>
+                      <option value="librarian">librarian</option>
+                      <option value="admin">admin</option>
+                    </select>
+                  </td>
+                  <td>
+                    @if (user.isActive) {
+                      <span class="badge badge-success">Active</span>
+                    } @else {
+                      <span class="badge badge-danger">Suspended</span>
+                    }
+                  </td>
+                  <td>
+                    <div class="flex gap-sm">
+                      <button class="btn btn-secondary btn-sm" (click)="toggleStatus(user)">
+                        {{ user.isActive ? 'Suspend' : 'Activate' }}
+                      </button>
+                      <button class="btn btn-danger btn-sm" (click)="deleteUser(user)">
+                        <app-icon name="trash-2" [size]="13"></app-icon> Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  </div>
+</div>

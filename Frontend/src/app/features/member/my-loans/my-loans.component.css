@@ -1,0 +1,39 @@
+.loan-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 1.1rem;
+}
+.loan-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1.1rem;
+}
+.loan-card-cover {
+  width: 60px;
+  height: 90px;
+  flex-shrink: 0;
+  background: linear-gradient(155deg, var(--color-primary-light), var(--color-primary-soft));
+  color: var(--color-primary);
+  opacity: 0.9;
+  border-radius: 7px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.loan-card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.loan-card-body h3 {
+  font-size: 0.95rem;
+  margin-bottom: 0.3rem;
+}
+.due-date {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.81rem;
+  margin-bottom: 0.55rem !important;
+}

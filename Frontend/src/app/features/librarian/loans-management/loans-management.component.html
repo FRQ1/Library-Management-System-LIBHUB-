@@ -1,0 +1,110 @@
+<div class="dashboard-layout">
+  <app-sidebar [links]="sidebarLinks" title="Librarian"></app-sidebar>
+
+  <div class="dashboard-content">
+    <div class="flex-between mb-1">
+      <div>
+        <h1>Loans</h1>
+        <p class="mb-0">Track checkouts, renewals, and returns.</p>
+      </div>
+      <div class="flex gap-sm">
+        <button class="btn btn-secondary" (click)="toggleOverdue()">
+          <app-icon name="clock" [size]="15"></app-icon>
+          {{ overdueOnly ? 'Show all loans' : 'Show overdue only' }}
+        </button>
+        <button class="btn btn-primary" (click)="showCheckoutForm = !showCheckoutForm">
+          <app-icon [name]="showCheckoutForm ? 'x' : 'plus'" [size]="15"></app-icon>
+          {{ showCheckoutForm ? 'Cancel' : 'Check Out' }}
+        </button>
+      </div>
+    </div>
+
+    @if (showCheckoutForm) {
+      <form class="card checkout-form mb-1" (ngSubmit)="submitCheckout()">
+        <h3>Check out a book</h3>
+        <p class="hint">Find the Book ID from the Books tab (or catalog URL) and the Member ID from the Admin &gt; Users tab.</p>
+
+        @if (checkoutError) {
+          <div class="alert alert-danger">
+            <app-icon name="alert-circle" [size]="16"></app-icon>
+            {{ checkoutError }}
+          </div>
+        }
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Book ID</label>
+            <input type="text" class="form-control" [(ngModel)]="checkoutBookId" name="bookId" required />
+          </div>
+          <div class="form-group">
+            <label>Member ID</label>
+            <input type="text" class="form-control" [(ngModel)]="checkoutMemberId" name="memberId" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Loan length (days)</label>
+          <input type="number" min="1" class="form-control copies-input" [(ngModel)]="checkoutDays" name="days" />
+        </div>
+
+        <button type="submit" class="btn btn-primary" [disabled]="checkoutLoading">
+          <app-icon name="check" [size]="15"></app-icon>
+          {{ checkoutLoading ? 'Checking out...' : 'Confirm Checkout' }}
+        </button>
+      </form>
+    }
+
+    @if (loading) {
+      <div class="spinner"></div>
+    } @else if (loans.length === 0) {
+      <div class="empty-state">
+        <app-icon name="refresh-cw" [size]="36"></app-icon>
+        <p>No loans to show.</p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Book</th>
+              <th>Due Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (loan of loans; track loan._id) {
+              <tr>
+                <td>{{ asUser(loan.member)?.name || 'Unknown' }}</td>
+                <td>{{ asBook(loan.book)?.title || 'Unknown' }}</td>
+                <td>{{ loan.dueDate | date: 'mediumDate' }}</td>
+                <td>
+                  @if (loan.status === 'returned') {
+                    <span class="badge badge-neutral">Returned</span>
+                  } @else if (isOverdue(loan)) {
+                    <span class="badge badge-danger">Overdue</span>
+                  } @else {
+                    <span class="badge badge-success">Active</span>
+                  }
+                </td>
+                <td>
+                  @if (loan.status !== 'returned') {
+                    <div class="flex gap-sm">
+                      <button class="btn btn-secondary btn-sm" (click)="renew(loan)">
+                        <app-icon name="refresh-cw" [size]="13"></app-icon> Renew
+                      </button>
+                      <button class="btn btn-primary btn-sm" (click)="returnBook(loan)">
+                        <app-icon name="check" [size]="13"></app-icon> Return
+                      </button>
+                    </div>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

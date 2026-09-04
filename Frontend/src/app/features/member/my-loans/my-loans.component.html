@@ -1,0 +1,67 @@
+<div class="container">
+  <div class="mb-1">
+    <h1>My Loans</h1>
+    <p class="mb-0">Your current and past borrowed books.</p>
+  </div>
+
+  @if (loading) {
+    <div class="spinner"></div>
+  } @else {
+    @if (currentLoans.length === 0) {
+      <div class="empty-state card">
+        <app-icon name="book-open" [size]="36"></app-icon>
+        <p>You don't have any active loans. <a routerLink="/">Browse the catalog</a> to borrow a book.</p>
+      </div>
+    } @else {
+      <div class="loan-cards">
+        @for (loan of currentLoans; track loan._id) {
+          <div class="card loan-card">
+            <div class="loan-card-cover">
+              @if (asBook(loan.book)?.coverImage) {
+                <img [src]="asBook(loan.book)?.coverImage | bookCover" [alt]="asBook(loan.book)?.title" />
+              } @else {
+                <app-icon name="book-open" [size]="20"></app-icon>
+              }
+            </div>
+            <div class="loan-card-body">
+              <h3>{{ asBook(loan.book)?.title || 'Unknown book' }}</h3>
+              <p class="mb-0 due-date">
+                <app-icon name="calendar" [size]="13"></app-icon>
+                Due {{ loan.dueDate | date: 'mediumDate' }}
+              </p>
+              @if (isOverdue(loan)) {
+                <span class="badge badge-danger">Overdue</span>
+              } @else {
+                <span class="badge badge-success">On time</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    @if (pastLoans.length > 0) {
+      <h2 class="mt-2 mb-1">Borrowing history</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Book</th>
+              <th>Borrowed</th>
+              <th>Returned</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (loan of pastLoans; track loan._id) {
+              <tr>
+                <td>{{ asBook(loan.book)?.title || 'Unknown book' }}</td>
+                <td>{{ loan.borrowDate | date: 'mediumDate' }}</td>
+                <td>{{ loan.returnDate | date: 'mediumDate' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

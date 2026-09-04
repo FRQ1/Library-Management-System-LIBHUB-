@@ -1,0 +1,77 @@
+<div class="container form-page">
+  <a routerLink="/librarian/books" class="back-link">
+    <app-icon name="arrow-left" [size]="15"></app-icon> Back to dashboard
+  </a>
+
+  <form class="card" [formGroup]="form" (ngSubmit)="submit()">
+    <h2>{{ isEditMode ? 'Edit Book' : 'Add New Book' }}</h2>
+    <p class="mb-1">{{ isEditMode ? 'Update this catalog entry.' : 'Add a new title to the LibHub catalog.' }}</p>
+
+    @if (errorMessage) {
+      <div class="alert alert-danger">
+        <app-icon name="alert-circle" [size]="18"></app-icon>
+        {{ errorMessage }}
+      </div>
+    }
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input id="title" type="text" class="form-control" formControlName="title" />
+      </div>
+      <div class="form-group">
+        <label for="author">Author</label>
+        <input id="author" type="text" class="form-control" formControlName="author" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="isbn">ISBN</label>
+        <input id="isbn" type="text" class="form-control" formControlName="isbn" />
+      </div>
+      <div class="form-group">
+        <label for="category">Category</label>
+        <select id="category" class="form-control" formControlName="category">
+          @for (cat of categoryOptions; track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="totalCopies">Total copies</label>
+      <input id="totalCopies" type="number" min="0" class="form-control copies-input" formControlName="totalCopies" />
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description</label>
+      <textarea id="description" class="form-control" rows="4" formControlName="description"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Cover image</label>
+      <label class="dropzone" for="coverImage">
+        @if (previewUrl) {
+          <img [src]="previewUrl" alt="Preview" class="dropzone-preview" />
+        } @else if (existingCoverImage) {
+          <img [src]="existingCoverImage | bookCover" alt="Current cover" class="dropzone-preview" />
+        } @else {
+          <app-icon name="image" [size]="26"></app-icon>
+          <span>Click to upload a cover image</span>
+          <span class="dropzone-hint">JPG, PNG or WEBP, up to 5MB</span>
+        }
+      </label>
+      <input id="coverImage" type="file" accept="image/jpeg,image/png,image/webp" class="visually-hidden" (change)="onFileSelected($event)" />
+    </div>
+
+    <div class="form-actions">
+      <a routerLink="/librarian/books" class="btn btn-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary" [disabled]="loading">
+        <app-icon name="check" [size]="16"></app-icon>
+        {{ loading ? 'Saving...' : 'Save Book' }}
+      </button>
+    </div>
+  </form>
+</div>

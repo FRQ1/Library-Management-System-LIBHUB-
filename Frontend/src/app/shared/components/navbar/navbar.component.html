@@ -1,0 +1,61 @@
+<header class="navbar">
+  <div class="navbar-inner">
+    <a routerLink="/" class="navbar-logo">
+      <span class="crest">
+        <app-icon name="library" [size]="19" [strokeWidth]="2.2"></app-icon>
+      </span>
+      <span class="navbar-logo-text">LibHub</span>
+    </a>
+
+    <nav class="navbar-links">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Catalog</a>
+
+      @if (auth.isLoggedIn()) {
+        <a routerLink="/my-loans" routerLinkActive="active">My Loans</a>
+        <a routerLink="/my-reservations" routerLinkActive="active">My Reservations</a>
+      }
+
+      @if (auth.role() === 'librarian' || auth.role() === 'admin') {
+        <a routerLink="/librarian/books" routerLinkActive="active">Dashboard</a>
+      }
+
+      @if (auth.role() === 'admin') {
+        <a routerLink="/admin" routerLinkActive="active">Admin</a>
+      }
+    </nav>
+
+    <div class="navbar-actions">
+      @if (auth.isLoggedIn()) {
+        <div class="navbar-user" (click)="toggleMenu()">
+          <div class="avatar">
+            @if (auth.currentUser()?.profilePicture) {
+              <img [src]="auth.currentUser()?.profilePicture | userAvatar" alt="" />
+            } @else {
+              {{ auth.currentUser()?.name?.charAt(0) }}
+            }
+          </div>
+          <span class="navbar-user-name">{{ auth.currentUser()?.name }}</span>
+          <app-icon name="chevron-down" [size]="15"></app-icon>
+
+          @if (menuOpen) {
+            <div class="navbar-dropdown">
+              <a routerLink="/profile" (click)="closeMenu()">
+                <app-icon name="user-circle" [size]="16"></app-icon> Profile
+              </a>
+              <button (click)="logout()">
+                <app-icon name="log-out" [size]="16"></app-icon> Log out
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <a routerLink="/login" class="btn btn-secondary btn-sm">
+          <app-icon name="log-in" [size]="15"></app-icon> Log in
+        </a>
+        <a routerLink="/register" class="btn btn-primary btn-sm">
+          <app-icon name="user-plus" [size]="15"></app-icon> Register
+        </a>
+      }
+    </div>
+  </div>
+</header>

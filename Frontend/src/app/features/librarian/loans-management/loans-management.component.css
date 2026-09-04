@@ -1,0 +1,18 @@
+.dashboard-layout {
+  display: flex;
+}
+.dashboard-content {
+  flex: 1;
+  padding: 1.75rem 2.25rem;
+  min-width: 0;
+}
+.checkout-form {
+  max-width: 540px;
+}
+.hint {
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+.copies-input {
+  max-width: 160px;
+}

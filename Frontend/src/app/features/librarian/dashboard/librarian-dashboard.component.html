@@ -1,0 +1,90 @@
+<div class="dashboard-layout">
+  <app-sidebar [links]="sidebarLinks" title="Librarian"></app-sidebar>
+
+  <div class="dashboard-content">
+    <div class="flex-between mb-1">
+      <div>
+        <h1>Books</h1>
+        <p class="mb-0">Manage the LibHub catalog.</p>
+      </div>
+      <a routerLink="/librarian/books/new" class="btn btn-primary">
+        <app-icon name="plus" [size]="16"></app-icon> Add Book
+      </a>
+    </div>
+
+    <form class="search-row" (ngSubmit)="fetchBooks()">
+      <div class="search-input-wrap">
+        <app-icon name="search" [size]="16" class="search-icon"></app-icon>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Search by title or author..."
+          [(ngModel)]="searchTerm"
+          name="search"
+        />
+      </div>
+      <button type="submit" class="btn btn-secondary">Search</button>
+    </form>
+
+    @if (loading) {
+      <div class="spinner"></div>
+    } @else if (books.length === 0) {
+      <div class="empty-state">
+        <app-icon name="book-open" [size]="36"></app-icon>
+        <p>No books yet. Add your first book to the catalog.</p>
+      </div>
+    } @else {
+      <div class="table-wrap mt-1">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Title</th>
+              <th>Author</th>
+              <th>Category</th>
+              <th>Copies</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (book of books; track book._id) {
+              <tr>
+                <td>
+                  <div class="thumb">
+                    @if (book.coverImage) {
+                      <img [src]="book.coverImage | bookCover" [alt]="book.title" />
+                    } @else {
+                      <app-icon name="book-open" [size]="16"></app-icon>
+                    }
+                  </div>
+                </td>
+                <td><a [routerLink]="['/books', book._id]" class="title-link">{{ book.title }}</a></td>
+                <td>{{ book.author }}</td>
+                <td class="capitalize">{{ book.category }}</td>
+                <td>{{ book.availableCopies }} / {{ book.totalCopies }}</td>
+                <td>
+                  @if (book.availableCopies > 0) {
+                    <span class="badge badge-success">Available</span>
+                  } @else {
+                    <span class="badge badge-danger">Checked out</span>
+                  }
+                </td>
+                <td>
+                  <div class="flex gap-sm">
+                    <a [routerLink]="['/librarian/books', book._id, 'edit']" class="btn btn-secondary btn-sm">
+                      <app-icon name="pencil" [size]="13"></app-icon> Edit
+                    </a>
+                    <button class="btn btn-danger btn-sm" (click)="deleteBook(book)">
+                      <app-icon name="trash-2" [size]="13"></app-icon> Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

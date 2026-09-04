@@ -1,0 +1,8 @@
+.dashboard-layout {
+  display: flex;
+}
+.dashboard-content {
+  flex: 1;
+  padding: 1.75rem 2.25rem;
+  min-width: 0;
+}

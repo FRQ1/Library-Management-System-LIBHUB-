@@ -1,0 +1,81 @@
+<div class="container">
+  <div class="catalog-header animate-fade-in-up">
+    <h1>Book Catalog</h1>
+    <p>Search and browse everything LibHub has to offer.</p>
+  </div>
+
+  <form class="search-row animate-fade-in-up" style="animation-delay: 60ms" (ngSubmit)="onSearchSubmit()">
+    <div class="search-input-wrap">
+      <app-icon name="search" [size]="17" class="search-icon"></app-icon>
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Search by title or author..."
+        [(ngModel)]="searchTerm"
+        name="search"
+      />
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+
+  <div class="category-chips animate-fade-in-up" style="animation-delay: 100ms">
+    @for (cat of categories; track cat.value) {
+      <button
+        type="button"
+        class="chip"
+        [class.chip-active]="activeCategory === cat.value"
+        (click)="selectCategory(cat.value)"
+      >
+        {{ cat.label }}
+      </button>
+    }
+  </div>
+
+  @if (loading) {
+    <div class="spinner"></div>
+  } @else if (errorMessage) {
+    <div class="alert alert-danger">
+      <app-icon name="alert-circle" [size]="18"></app-icon>
+      {{ errorMessage }}
+    </div>
+  } @else if (books.length === 0) {
+    <div class="empty-state">
+      <app-icon name="search" [size]="36"></app-icon>
+      <p>No books found. Try a different search or category.</p>
+    </div>
+  } @else {
+    <div class="grid-cards mt-1">
+      @for (book of books; track book._id; let i = $index) {
+        <a class="book-card" [routerLink]="['/books', book._id]" [style.animation-delay.ms]="i * 45">
+          <div class="book-cover">
+            @if (book.coverImage) {
+              <img [src]="book.coverImage | bookCover" [alt]="book.title" />
+            } @else {
+              <div class="book-cover-placeholder">
+                <app-icon name="book-open" [size]="30"></app-icon>
+              </div>
+            }
+            <div class="book-cover-overlay">
+              <span class="view-details">
+                <app-icon name="eye" [size]="14"></app-icon> View details
+              </span>
+            </div>
+          </div>
+          <div class="book-card-body">
+            <h3 class="book-title">{{ book.title }}</h3>
+            <p class="book-author">{{ book.author }}</p>
+            @if (book.availableCopies > 0) {
+              <span class="badge badge-success">
+                <app-icon name="check-circle" [size]="12"></app-icon> Available
+              </span>
+            } @else {
+              <span class="badge badge-danger">
+                <app-icon name="clock" [size]="12"></app-icon> Checked out
+              </span>
+            }
+          </div>
+        </a>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,66 @@
+<div class="auth-page">
+  <div class="auth-branding">
+    <div class="auth-branding-content">
+      <div class="crest crest-lg">
+        <app-icon name="library" [size]="28" [strokeWidth]="2"></app-icon>
+      </div>
+      <h1 class="brand-title">Join LibHub</h1>
+      <p class="brand-tagline">Create an account to reserve books, track loans, and manage your reading list.</p>
+    </div>
+  </div>
+
+  <div class="auth-form-wrap">
+    <form class="auth-card" [formGroup]="form" (ngSubmit)="submit()">
+      <h2>Create your account</h2>
+      <p>Join LibHub to borrow and reserve books</p>
+
+      @if (errorMessage) {
+        <div class="alert alert-danger">
+          <app-icon name="alert-circle" [size]="18"></app-icon>
+          {{ errorMessage }}
+        </div>
+      }
+
+      <div class="form-group">
+        <label for="name">Full name</label>
+        <input id="name" type="text" class="form-control" formControlName="name" placeholder="Jane Doe" />
+        @if (form.get('name')?.touched && form.get('name')?.invalid) {
+          <div class="form-error">Name must be at least 2 characters.</div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" class="form-control" formControlName="email" placeholder="you@example.com" />
+        @if (form.get('email')?.touched && form.get('email')?.invalid) {
+          <div class="form-error">Please enter a valid email address.</div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" class="form-control" formControlName="password" placeholder="At least 8 characters" />
+        @if (form.get('password')?.touched && form.get('password')?.invalid) {
+          <div class="form-error">Password must be at least 8 characters.</div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm password</label>
+        <input id="confirmPassword" type="password" class="form-control" formControlName="confirmPassword" placeholder="Repeat your password" />
+        @if (form.get('confirmPassword')?.touched && form.errors?.['mismatch']) {
+          <div class="form-error">Passwords do not match.</div>
+        }
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block mt-1" [disabled]="loading">
+        <app-icon name="user-plus" [size]="16"></app-icon>
+        {{ loading ? 'Creating account...' : 'Register' }}
+      </button>
+
+      <p class="auth-footer">
+        Already have an account? <a routerLink="/login">Log in</a>
+      </p>
+    </form>
+  </div>
+</div>

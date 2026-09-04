@@ -1,0 +1,65 @@
+.form-page {
+  max-width: 680px;
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+.back-link:hover {
+  color: var(--color-primary);
+}
+.copies-input {
+  max-width: 160px;
+}
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 1.5px dashed var(--color-border-strong);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  background: var(--color-primary-soft);
+  transition: border-color 0.15s ease, background 0.15s ease;
+  overflow: hidden;
+}
+.dropzone:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+.dropzone span {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.dropzone-hint {
+  font-size: 0.75rem !important;
+  font-weight: 400 !important;
+  color: var(--color-text-faint);
+}
+.dropzone-preview {
+  max-height: 160px;
+  border-radius: var(--radius-sm);
+  object-fit: contain;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+}
