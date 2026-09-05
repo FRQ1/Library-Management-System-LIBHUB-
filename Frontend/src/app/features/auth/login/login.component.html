@@ -37,10 +37,6 @@
         }
       </div>
 
-      <div class="auth-links">
-        <a routerLink="/forgot-password">Forgot password?</a>
-      </div>
-
       <button type="submit" class="btn btn-primary btn-block mt-1" [disabled]="loading">
         <app-icon name="log-in" [size]="16"></app-icon>
         {{ loading ? 'Logging in...' : 'Log in' }}

@@ -42,16 +42,6 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-    verificationToken: { type: String, select: false },
-    verificationTokenExpires: { type: Date, select: false },
-
-    resetPasswordToken: { type: String, select: false },
-    resetPasswordExpires: { type: Date, select: false },
-
     isActive: {
       type: Boolean,
       default: true,

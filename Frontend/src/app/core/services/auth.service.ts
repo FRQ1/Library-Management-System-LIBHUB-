@@ -46,18 +46,6 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  forgotPassword(email: string): Observable<{ status: string; message: string }> {
-    return this.http.post<{ status: string; message: string }>(`${this.baseUrl}/forgot-password`, { email });
-  }
-
-  resetPassword(token: string, password: string): Observable<{ status: string; message: string }> {
-    return this.http.patch<{ status: string; message: string }>(`${this.baseUrl}/reset-password/${token}`, { password });
-  }
-
-  verifyEmail(token: string): Observable<{ status: string; message: string }> {
-    return this.http.get<{ status: string; message: string }>(`${this.baseUrl}/verify-email/${token}`);
-  }
-
   getToken(): string | null {
     return localStorage.getItem(TOKEN_KEY);
   }

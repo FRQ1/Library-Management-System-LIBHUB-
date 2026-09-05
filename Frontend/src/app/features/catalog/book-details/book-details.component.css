@@ -32,7 +32,7 @@
 }
 .book-cover-placeholder {
   color: var(--color-primary);
-  opacity: 0.35;
+  opacity: 0.55;
 }
 .book-details-author {
   font-size: 1.05rem;

@@ -44,7 +44,7 @@
 }
 .chip:hover {
   border-color: var(--color-primary);
-  color: var(--color-primary-dark);
+  color: #fff;
   transform: translateY(-1px);
 }
 .chip-active {
@@ -88,17 +88,17 @@
 }
 .book-cover-placeholder {
   color: var(--color-primary);
-  opacity: 0.35;
+  opacity: 0.55;
   transition: opacity 0.25s ease, transform 0.25s var(--ease-spring);
 }
 .book-card:hover .book-cover-placeholder {
-  opacity: 0.5;
+  opacity: 0.75;
   transform: scale(1.08);
 }
 .book-cover-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(11, 38, 32, 0.9), transparent 55%);
+  background: linear-gradient(to top, rgba(6, 9, 16, 0.94), transparent 55%);
   display: flex;
   align-items: flex-end;
   justify-content: center;

@@ -27,7 +27,7 @@
   font-family: var(--font-display);
   font-size: 1.9rem;
   font-weight: 700;
-  color: var(--color-primary-dark);
+  color: var(--color-primary);
   text-transform: uppercase;
 }
 .picture-controls {

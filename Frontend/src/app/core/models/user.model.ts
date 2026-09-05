@@ -7,7 +7,6 @@ export interface User {
   role: UserRole;
   profilePicture?: string | null;
   isActive?: boolean;
-  isVerified?: boolean;
   createdAt?: string;
 }
 

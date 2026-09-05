@@ -32,11 +32,12 @@
 }
 .sidebar a:hover {
   background: var(--color-primary-soft);
-  color: var(--color-primary-dark);
+  color: #fff;
 }
 .sidebar a.active {
-  background: var(--color-primary);
+  background: var(--gradient-primary);
   color: #fff;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
 }
 .sidebar-icon {
   flex-shrink: 0;

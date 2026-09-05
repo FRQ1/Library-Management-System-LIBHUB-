@@ -4,9 +4,6 @@ import { roleGuard } from './core/guards/role.guard';
 
 import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
-import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
-import { ResetPasswordComponent } from './features/auth/reset-password/reset-password.component';
-import { VerifyEmailComponent } from './features/auth/verify-email/verify-email.component';
 
 import { BookListComponent } from './features/catalog/book-list/book-list.component';
 import { BookDetailsComponent } from './features/catalog/book-details/book-details.component';
@@ -28,10 +25,6 @@ export const routes: Routes = [
   { path: 'books/:id', component: BookDetailsComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'reset-password', component: ResetPasswordComponent },
-  { path: 'reset-password/:token', component: ResetPasswordComponent },
-  { path: 'verify-email/:token', component: VerifyEmailComponent },
 
   // Authenticated (any role)
   { path: 'my-loans', component: MyLoansComponent, canActivate: [authGuard] },
