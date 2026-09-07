@@ -19,7 +19,7 @@ const app = express();
 
 dbConnect();
 
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:4200' }));
 app.use(express.json());
 
 app.use("/api/v1/auth", authRouter);
