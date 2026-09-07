@@ -14,8 +14,8 @@
       </div>
     } @else {
       <div class="loan-cards">
-        @for (loan of currentLoans; track loan._id) {
-          <div class="card loan-card">
+        @for (loan of currentLoans; track loan._id; let i = $index) {
+          <div class="card loan-card animate-fade-in-up" [style.animation-delay]="(i * 60) + 'ms'">
             <div class="loan-card-cover">
               @if (asBook(loan.book)?.coverImage) {
                 <img [src]="asBook(loan.book)?.coverImage | bookCover" [alt]="asBook(loan.book)?.title" />
@@ -52,8 +52,8 @@
             </tr>
           </thead>
           <tbody>
-            @for (loan of pastLoans; track loan._id) {
-              <tr>
+            @for (loan of pastLoans; track loan._id; let i = $index) {
+              <tr [style.animation-delay]="(i * 40) + 'ms'">
                 <td>{{ asBook(loan.book)?.title || 'Unknown book' }}</td>
                 <td>{{ loan.borrowDate | date: 'mediumDate' }}</td>
                 <td>{{ loan.returnDate | date: 'mediumDate' }}</td>

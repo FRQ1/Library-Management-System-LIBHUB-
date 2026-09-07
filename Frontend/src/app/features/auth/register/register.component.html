@@ -1,66 +1,166 @@
-<div class="auth-page">
-  <div class="auth-branding">
-    <div class="auth-branding-content">
-      <div class="crest crest-lg">
-        <app-icon name="library" [size]="28" [strokeWidth]="2"></app-icon>
-      </div>
-      <h1 class="brand-title">Join LibHub</h1>
-      <p class="brand-tagline">Create an account to reserve books, track loans, and manage your reading list.</p>
+<div class="auth-page-bg" id="auth-register-page">
+  <div class="auth-bg-overlay"></div>
+
+  <div class="auth-card" id="register-card">
+    <!-- Brand Header -->
+    <div class="brand-header">
+      <a routerLink="/" class="brand-crest-link" id="register-home-link" aria-label="Go to LibHub Home">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
+          <rect width="32" height="32" rx="8" fill="#0F766E"/>
+          <path d="M7 23.5V8.5C7 7.67 7.67 7 8.5 7H15C15.55 7 16 7.45 16 8V23C16 23.55 15.55 24 15 24H8.5C7.67 24 7 23.5 7 23.5Z" fill="#14B8A6"/>
+          <path d="M25 23.5V8.5C25 7.67 24.33 7 23.5 7H17C16.45 7 16 7.45 16 8V23C16 23.55 16.45 24 17 24H23.5C24.33 24 25 23.5 25 23.5Z" fill="#0D9488"/>
+          <path d="M7 23.5C7 23.5 10.5 22.2 16 23.5C21.5 22.2 25 23.5 25 23.5" stroke="#FDE68A" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M16 8V23.5" stroke="#042F2E" stroke-width="1.2"/>
+          <path d="M13 7V13L15 11.8L17 13V7" fill="#F59E0B"/>
+        </svg>
+      </a>
+      <h1 class="auth-title">Create an account</h1>
+      <p class="auth-subtitle">Join LibHub to explore and borrow books</p>
     </div>
-  </div>
 
-  <div class="auth-form-wrap">
-    <form class="auth-card" [formGroup]="form" (ngSubmit)="submit()">
-      <h2>Create your account</h2>
-      <p>Join LibHub to borrow and reserve books</p>
+    <!-- Segmented Navigation Switcher -->
+    <nav class="auth-tabs" aria-label="Authentication Selector">
+      <a routerLink="/login" class="tab-btn" id="tab-login">Sign In</a>
+      <a routerLink="/register" class="tab-btn active" id="tab-create-account" aria-current="page">Create Account</a>
+    </nav>
 
-      @if (errorMessage) {
-        <div class="alert alert-danger">
-          <app-icon name="alert-circle" [size]="18"></app-icon>
-          {{ errorMessage }}
+    <!-- Error Alert -->
+    @if (errorMessage) {
+      <div class="alert alert-danger" role="alert" id="register-error-alert">
+        <app-icon name="alert-circle" [size]="18"></app-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+    }
+
+    <!-- Registration Form -->
+    <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form" id="register-form">
+      <!-- Full Name Field -->
+      <div class="form-group">
+        <label for="register-name" class="form-label">Full name</label>
+        <div class="input-container" [class.input-error]="form.get('name')?.touched && form.get('name')?.invalid">
+          <span class="input-icon">
+            <app-icon name="user" [size]="18"></app-icon>
+          </span>
+          <input
+            id="register-name"
+            type="text"
+            class="input-field"
+            formControlName="name"
+            placeholder="Jane Doe"
+            autocomplete="name"
+            required
+          />
         </div>
-      }
-
-      <div class="form-group">
-        <label for="name">Full name</label>
-        <input id="name" type="text" class="form-control" formControlName="name" placeholder="Jane Doe" />
         @if (form.get('name')?.touched && form.get('name')?.invalid) {
-          <div class="form-error">Name must be at least 2 characters.</div>
+          <span class="form-error">Name must be at least 2 characters.</span>
         }
       </div>
 
+      <!-- Email Field -->
       <div class="form-group">
-        <label for="email">Email</label>
-        <input id="email" type="email" class="form-control" formControlName="email" placeholder="you@example.com" />
+        <label for="register-email" class="form-label">Email address</label>
+        <div class="input-container" [class.input-error]="form.get('email')?.touched && form.get('email')?.invalid">
+          <span class="input-icon">
+            <app-icon name="mail" [size]="18"></app-icon>
+          </span>
+          <input
+            id="register-email"
+            type="email"
+            class="input-field"
+            formControlName="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+            required
+          />
+        </div>
         @if (form.get('email')?.touched && form.get('email')?.invalid) {
-          <div class="form-error">Please enter a valid email address.</div>
+          <span class="form-error">Please enter a valid email address.</span>
         }
       </div>
 
+      <!-- Password Field -->
       <div class="form-group">
-        <label for="password">Password</label>
-        <input id="password" type="password" class="form-control" formControlName="password" placeholder="At least 8 characters" />
+        <label for="register-password" class="form-label">Password</label>
+        <div class="input-container" [class.input-error]="form.get('password')?.touched && form.get('password')?.invalid">
+          <span class="input-icon">
+            <app-icon name="lock" [size]="18"></app-icon>
+          </span>
+          <input
+            id="register-password"
+            [type]="showPassword ? 'text' : 'password'"
+            class="input-field"
+            formControlName="password"
+            placeholder="At least 8 characters"
+            autocomplete="new-password"
+            required
+          />
+          <button
+            type="button"
+            class="toggle-password"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+            id="reg-password-toggle"
+          >
+            <app-icon [name]="showPassword ? 'eye-off' : 'eye'" [size]="18"></app-icon>
+          </button>
+        </div>
         @if (form.get('password')?.touched && form.get('password')?.invalid) {
-          <div class="form-error">Password must be at least 8 characters.</div>
+          <span class="form-error">Password must be at least 8 characters.</span>
         }
       </div>
 
+      <!-- Confirm Password Field -->
       <div class="form-group">
-        <label for="confirmPassword">Confirm password</label>
-        <input id="confirmPassword" type="password" class="form-control" formControlName="confirmPassword" placeholder="Repeat your password" />
+        <label for="register-confirm" class="form-label">Confirm password</label>
+        <div class="input-container" [class.input-error]="form.get('confirmPassword')?.touched && (form.get('confirmPassword')?.invalid || form.errors?.['mismatch'])">
+          <span class="input-icon">
+            <app-icon name="lock" [size]="18"></app-icon>
+          </span>
+          <input
+            id="register-confirm"
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            class="input-field"
+            formControlName="confirmPassword"
+            placeholder="Repeat your password"
+            autocomplete="new-password"
+            required
+          />
+          <button
+            type="button"
+            class="toggle-password"
+            (click)="toggleConfirmPasswordVisibility()"
+            [attr.aria-label]="showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'"
+            id="reg-confirm-toggle"
+          >
+            <app-icon [name]="showConfirmPassword ? 'eye-off' : 'eye'" [size]="18"></app-icon>
+          </button>
+        </div>
         @if (form.get('confirmPassword')?.touched && form.errors?.['mismatch']) {
-          <div class="form-error">Passwords do not match.</div>
+          <span class="form-error">Passwords do not match.</span>
         }
       </div>
 
-      <button type="submit" class="btn btn-primary btn-block mt-1" [disabled]="loading">
-        <app-icon name="user-plus" [size]="16"></app-icon>
-        {{ loading ? 'Creating account...' : 'Register' }}
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="submit-btn"
+        [disabled]="loading"
+        id="register-submit-button"
+      >
+        @if (loading) {
+          <span class="spinner"></span>
+          <span>Creating account...</span>
+        } @else {
+          <span>Create Account</span>
+          <app-icon name="user-plus" [size]="16"></app-icon>
+        }
       </button>
-
-      <p class="auth-footer">
-        Already have an account? <a routerLink="/login">Log in</a>
-      </p>
     </form>
+
+    <!-- Bottom Link -->
+    <div class="auth-footer">
+      <span>Already have an account?</span>
+      <a routerLink="/login" class="auth-link" id="goto-login-link">Sign in</a>
+    </div>
   </div>
 </div>

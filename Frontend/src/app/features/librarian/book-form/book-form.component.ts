@@ -6,6 +6,8 @@ import { BookService } from '../../../core/services/book.service';
 import { BookCategory } from '../../../core/models/book.model';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { BookCoverPipe } from '../../../core/pipes/media-url.pipe';
+import { validateBookCoverFile } from '../../../core/utils/file-validation';
+import { ToastService } from '../../../shared/components/toast/toast.service';
 
 const CATEGORY_OPTIONS: BookCategory[] = [
   'fiction',
@@ -29,6 +31,10 @@ const CATEGORY_OPTIONS: BookCategory[] = [
 })
 export class BookFormComponent implements OnInit {
   private fb = inject(FormBuilder);
+  private bookService = inject(BookService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private toast = inject(ToastService);
 
   categoryOptions = CATEGORY_OPTIONS;
 
@@ -50,12 +56,6 @@ export class BookFormComponent implements OnInit {
   loading = false;
   errorMessage = '';
 
-  constructor(
-    private bookService: BookService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) {}
-
   ngOnInit(): void {
     this.bookId = this.route.snapshot.paramMap.get('id');
     this.isEditMode = !!this.bookId;
@@ -76,6 +76,7 @@ export class BookFormComponent implements OnInit {
         },
         error: () => {
           this.errorMessage = 'Could not load this book.';
+          this.toast.error('Could not load this book.');
         },
       });
     }
@@ -83,15 +84,28 @@ export class BookFormComponent implements OnInit {
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.selectedFile = input.files?.[0] || null;
+    const file = input.files?.[0] || null;
 
-    if (this.selectedFile) {
-      const reader = new FileReader();
-      reader.onload = () => (this.previewUrl = reader.result as string);
-      reader.readAsDataURL(this.selectedFile);
-    } else {
+    if (!file) {
+      this.selectedFile = null;
       this.previewUrl = null;
+      return;
     }
+
+    const validation = validateBookCoverFile(file);
+    if (!validation.isValid) {
+      this.errorMessage = validation.error || 'Invalid file.';
+      this.toast.error(this.errorMessage);
+      input.value = '';
+      return;
+    }
+
+    this.errorMessage = '';
+    this.selectedFile = file;
+
+    const reader = new FileReader();
+    reader.onload = () => (this.previewUrl = reader.result as string);
+    reader.readAsDataURL(this.selectedFile);
   }
 
   submit(): void {
@@ -122,12 +136,15 @@ export class BookFormComponent implements OnInit {
     request$.subscribe({
       next: () => {
         this.loading = false;
+        this.toast.success(this.isEditMode ? 'Book updated successfully.' : 'Book added to catalog.');
         this.router.navigate(['/librarian/books']);
       },
       error: (err) => {
         this.loading = false;
         this.errorMessage = err.error?.message || 'Could not save this book.';
+        this.toast.error(this.errorMessage);
       },
     });
   }
 }
+

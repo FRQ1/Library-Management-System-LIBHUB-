@@ -1,10 +1,26 @@
 <header class="navbar">
   <div class="navbar-inner">
     <a routerLink="/" class="navbar-logo">
-      <span class="crest">
-        <app-icon name="library" [size]="19" [strokeWidth]="2.2"></app-icon>
-      </span>
-      <span class="navbar-logo-text">LibHub</span>
+      <div class="brand-crest">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+          <rect width="32" height="32" rx="8" fill="url(#crestGrad)"/>
+          <path d="M7 23.5V8.5C7 7.67 7.67 7 8.5 7H15C15.55 7 16 7.45 16 8V23C16 23.55 15.55 24 15 24H8.5C7.67 24 7 23.5 7 23.5Z" fill="#14B8A6"/>
+          <path d="M25 23.5V8.5C25 7.67 24.33 7 23.5 7H17C16.45 7 16 7.45 16 8V23C16 23.55 16.45 24 17 24H23.5C24.33 24 25 23.5 25 23.5Z" fill="#0D9488"/>
+          <path d="M7 23.5C7 23.5 10.5 22.2 16 23.5C21.5 22.2 25 23.5 25 23.5" stroke="#FDE68A" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M16 8V23.5" stroke="#042F2E" stroke-width="1.2"/>
+          <path d="M13 7V13L15 11.8L17 13V7" fill="#F59E0B"/>
+          <defs>
+            <linearGradient id="crestGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#0F766E"/>
+              <stop offset="1" stop-color="#042F2E"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="brand-titles">
+        <span class="navbar-logo-text">LibHub</span>
+        <span class="navbar-logo-sub">Library System</span>
+      </div>
     </a>
 
     <nav class="navbar-links">

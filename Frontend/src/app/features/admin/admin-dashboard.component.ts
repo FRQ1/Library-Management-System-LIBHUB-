@@ -1,11 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { forkJoin } from 'rxjs';
 import { SidebarComponent, SidebarLink } from '../../shared/components/sidebar/sidebar.component';
+import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
+import { ToastService } from '../../shared/components/toast/toast.service';
+import { NavigationService } from '../../core/services/navigation.service';
 import { UserService } from '../../core/services/user.service';
 import { BookService } from '../../core/services/book.service';
 import { LoanService } from '../../core/services/loan.service';
-import { User, UserRole } from '../../core/models/user.model';
+import { User, UserRole, getUserId } from '../../core/models/user.model';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 
 type AdminTab = 'users' | 'librarians' | 'reports';
@@ -13,18 +16,18 @@ type AdminTab = 'users' | 'librarians' | 'reports';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, SidebarComponent, IconComponent],
+  imports: [CommonModule, SidebarComponent, IconComponent, ConfirmModalComponent],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.css',
 })
 export class AdminDashboardComponent implements OnInit {
-  sidebarLinks: SidebarLink[] = [
-    { label: 'Books', path: '/librarian/books', icon: 'book-open' },
-    { label: 'Loans', path: '/librarian/loans', icon: 'refresh-cw' },
-    { label: 'Reservations', path: '/librarian/reservations', icon: 'bookmark' },
-    { label: 'Admin', path: '/admin', icon: 'settings' },
-    { label: 'Profile', path: '/profile', icon: 'user' },
-  ];
+  private userService = inject(UserService);
+  private bookService = inject(BookService);
+  private loanService = inject(LoanService);
+  private navigationService = inject(NavigationService);
+  private toast = inject(ToastService);
+
+  sidebarLinks: SidebarLink[] = this.navigationService.getStaffSidebarLinks();
 
   activeTab: AdminTab = 'users';
 
@@ -40,7 +43,11 @@ export class AdminDashboardComponent implements OnInit {
   };
   loadingReports = true;
 
-  constructor(private userService: UserService, private bookService: BookService, private loanService: LoanService) {}
+  // Confirmation modal state
+  showDeleteModal = false;
+  userToDelete: User | null = null;
+
+  getUserId = getUserId;
 
   ngOnInit(): void {
     this.fetchUsers();
@@ -61,6 +68,7 @@ export class AdminDashboardComponent implements OnInit {
       },
       error: () => {
         this.loadingUsers = false;
+        this.toast.error('Could not load users list.');
       },
     });
   }
@@ -84,31 +92,67 @@ export class AdminDashboardComponent implements OnInit {
       },
       error: () => {
         this.loadingReports = false;
+        this.toast.error('Could not load system reports.');
       },
     });
   }
 
   toggleStatus(user: User): void {
-    this.userService.updateStatus(user.id, !user.isActive).subscribe({
-      next: () => this.fetchUsers(),
-      error: (err) => alert(err.error?.message || 'Could not update this user.'),
+    const id = getUserId(user);
+    if (!id) return;
+
+    this.userService.updateStatus(id, !user.isActive).subscribe({
+      next: () => {
+        this.toast.success(`User status updated.`);
+        this.fetchUsers();
+      },
+      error: (err) => this.toast.error(err.error?.message || 'Could not update this user.'),
     });
   }
 
   changeRole(user: User, role: UserRole): void {
     if (role === user.role) return;
-    this.userService.updateRole(user.id, role).subscribe({
-      next: () => this.fetchUsers(),
-      error: (err) => alert(err.error?.message || 'Could not update this user.'),
+    const id = getUserId(user);
+    if (!id) return;
+
+    this.userService.updateRole(id, role).subscribe({
+      next: () => {
+        this.toast.success(`User role changed to ${role}.`);
+        this.fetchUsers();
+      },
+      error: (err) => this.toast.error(err.error?.message || 'Could not update this user role.'),
     });
   }
 
-  deleteUser(user: User): void {
-    if (!confirm(`Delete ${user.name}? This cannot be undone.`)) return;
+  promptDeleteUser(user: User): void {
+    this.userToDelete = user;
+    this.showDeleteModal = true;
+  }
 
-    this.userService.deleteUser(user.id).subscribe({
-      next: () => this.fetchUsers(),
-      error: (err) => alert(err.error?.message || 'Could not delete this user.'),
+  cancelDelete(): void {
+    this.showDeleteModal = false;
+    this.userToDelete = null;
+  }
+
+  confirmDeleteUser(): void {
+    if (!this.userToDelete) return;
+    const id = getUserId(this.userToDelete);
+    if (!id) return;
+
+    const targetName = this.userToDelete.name;
+    this.showDeleteModal = false;
+
+    this.userService.deleteUser(id).subscribe({
+      next: () => {
+        this.toast.success(`User "${targetName}" deleted.`);
+        this.fetchUsers();
+        this.userToDelete = null;
+      },
+      error: (err) => {
+        this.toast.error(err.error?.message || 'Could not delete this user.');
+        this.userToDelete = null;
+      },
     });
   }
 }
+

@@ -23,8 +23,13 @@ export class AuthService {
   constructor(private http: HttpClient, private router: Router) {}
 
   private readStoredUser(): User | null {
-    const raw = localStorage.getItem(USER_KEY);
-    return raw ? (JSON.parse(raw) as User) : null;
+    try {
+      const raw = localStorage.getItem(USER_KEY);
+      return raw ? (JSON.parse(raw) as User) : null;
+    } catch {
+      localStorage.removeItem(USER_KEY);
+      return null;
+    }
   }
 
   register(payload: { name: string; email: string; password: string }): Observable<AuthResponse> {
@@ -39,11 +44,13 @@ export class AuthService {
     );
   }
 
-  logout(): void {
+  logout(navigate = true): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     this.currentUserSignal.set(null);
-    this.router.navigate(['/login']);
+    if (navigate) {
+      this.router.navigate(['/login']);
+    }
   }
 
   getToken(): string | null {

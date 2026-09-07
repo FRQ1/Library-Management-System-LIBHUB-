@@ -11,18 +11,18 @@
       <app-icon name="arrow-left" [size]="15"></app-icon> Back to catalog
     </a>
 
-    <div class="book-details card">
+    <div class="book-details card animate-fade-in-up">
       <div class="book-details-cover">
-        @if (book.coverImage) {
-          <img [src]="book.coverImage | bookCover" [alt]="book.title" />
-        } @else {
-          <div class="book-cover-placeholder">
-            <app-icon name="book-open" [size]="44"></app-icon>
-          </div>
-        }
+        <div class="book-spine-crease"></div>
+        <img
+          [src]="book.coverImage | bookCover"
+          [alt]="book.title"
+          (error)="$any($event.target).src = '/assets/images/book-placeholder.svg'"
+          class="book-details-img"
+        />
       </div>
 
-      <div class="book-details-info">
+      <div class="book-details-info animate-fade-in-up" style="animation-delay: 80ms;">
         <h1>{{ book.title }}</h1>
         <p class="book-details-author">by {{ book.author }}</p>
 
@@ -73,7 +73,7 @@
             <a [routerLink]="['/librarian/books', book._id, 'edit']" class="btn btn-secondary">
               <app-icon name="pencil" [size]="15"></app-icon> Edit book
             </a>
-            <button class="btn btn-danger" (click)="deleteBook()">
+            <button class="btn btn-danger" (click)="promptDeleteBook()">
               <app-icon name="trash-2" [size]="15"></app-icon> Delete book
             </button>
             <a routerLink="/librarian/loans" class="btn btn-secondary">
@@ -85,3 +85,15 @@
     </div>
   }
 </div>
+
+<app-confirm-modal
+  [isOpen]="showDeleteModal"
+  title="Delete Book"
+  [message]="'Are you sure you want to delete &quot;' + (book?.title || 'this book') + '&quot;? This cannot be undone.'"
+  confirmText="Delete Book"
+  cancelText="Cancel"
+  [isDanger]="true"
+  (confirmed)="confirmDeleteBook()"
+  (cancelled)="cancelDelete()"
+></app-confirm-modal>
+

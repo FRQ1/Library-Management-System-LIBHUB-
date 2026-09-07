@@ -1,28 +1,29 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent, SidebarLink } from '../../../shared/components/sidebar/sidebar.component';
+import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
+import { ToastService } from '../../../shared/components/toast/toast.service';
+import { NavigationService } from '../../../core/services/navigation.service';
 import { LoanService } from '../../../core/services/loan.service';
 import { Loan } from '../../../core/models/loan.model';
 import { Book } from '../../../core/models/book.model';
 import { User } from '../../../core/models/user.model';
-import { AuthService } from '../../../core/services/auth.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-loans-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, IconComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, IconComponent, ConfirmModalComponent],
   templateUrl: './loans-management.component.html',
   styleUrl: './loans-management.component.css',
 })
 export class LoansManagementComponent implements OnInit {
-  sidebarLinks: SidebarLink[] = [
-    { label: 'Books', path: '/librarian/books', icon: 'book-open' },
-    { label: 'Loans', path: '/librarian/loans', icon: 'refresh-cw' },
-    { label: 'Reservations', path: '/librarian/reservations', icon: 'bookmark' },
-    { label: 'Profile', path: '/profile', icon: 'user' },
-  ];
+  private loanService = inject(LoanService);
+  private navigationService = inject(NavigationService);
+  private toast = inject(ToastService);
+
+  sidebarLinks: SidebarLink[] = this.navigationService.getStaffSidebarLinks();
 
   loans: Loan[] = [];
   loading = true;
@@ -35,22 +36,20 @@ export class LoansManagementComponent implements OnInit {
   checkoutError = '';
   checkoutLoading = false;
 
-  constructor(private loanService: LoanService, public auth: AuthService) {
-    if (this.auth.role() === 'admin') {
-      this.sidebarLinks = [{ label: 'Admin', path: '/admin', icon: 'settings' }, ...this.sidebarLinks];
-    }
-  }
+  // Confirm return modal state
+  showReturnModal = false;
+  loanToReturn: Loan | null = null;
 
   ngOnInit(): void {
     this.fetchLoans();
   }
 
-  asBook(book: Loan['book']): Book | null {
-    return typeof book === 'object' ? book : null;
+  asBook(book: Book | string | undefined | null): Book | null {
+    return (book && typeof book === 'object') ? (book as Book) : null;
   }
 
-  asUser(user: Loan['member']): User | null {
-    return typeof user === 'object' ? user : null;
+  asUser(user: User | string | undefined | null): User | null {
+    return (user && typeof user === 'object') ? (user as User) : null;
   }
 
   fetchLoans(): void {
@@ -64,6 +63,7 @@ export class LoansManagementComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
+        this.toast.error('Could not load loans list.');
       },
     });
   }
@@ -87,6 +87,7 @@ export class LoansManagementComponent implements OnInit {
           this.showCheckoutForm = false;
           this.checkoutBookId = '';
           this.checkoutMemberId = '';
+          this.toast.success('Book checked out successfully.');
           this.fetchLoans();
         },
         error: (err) => {
@@ -98,17 +99,39 @@ export class LoansManagementComponent implements OnInit {
 
   renew(loan: Loan): void {
     this.loanService.renew(loan._id).subscribe({
-      next: () => this.fetchLoans(),
-      error: (err) => alert(err.error?.message || 'Could not renew this loan.'),
+      next: () => {
+        this.toast.success('Loan renewed successfully.');
+        this.fetchLoans();
+      },
+      error: (err) => this.toast.error(err.error?.message || 'Could not renew this loan.'),
     });
   }
 
-  returnBook(loan: Loan): void {
-    if (!confirm('Mark this book as returned?')) return;
+  promptReturn(loan: Loan): void {
+    this.loanToReturn = loan;
+    this.showReturnModal = true;
+  }
+
+  cancelReturn(): void {
+    this.showReturnModal = false;
+    this.loanToReturn = null;
+  }
+
+  confirmReturn(): void {
+    if (!this.loanToReturn) return;
+    const loan = this.loanToReturn;
+    this.showReturnModal = false;
 
     this.loanService.returnBook(loan._id).subscribe({
-      next: () => this.fetchLoans(),
-      error: (err) => alert(err.error?.message || 'Could not process this return.'),
+      next: () => {
+        this.toast.success('Book marked as returned.');
+        this.loanToReturn = null;
+        this.fetchLoans();
+      },
+      error: (err) => {
+        this.toast.error(err.error?.message || 'Could not process this return.');
+        this.loanToReturn = null;
+      },
     });
   }
 
@@ -116,3 +139,4 @@ export class LoansManagementComponent implements OnInit {
     return loan.status === 'active' && new Date(loan.dueDate) < new Date();
   }
 }
+

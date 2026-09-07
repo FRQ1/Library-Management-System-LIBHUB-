@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Book } from '../models/book.model';
@@ -12,14 +12,14 @@ export class BookService {
   constructor(private http: HttpClient) {}
 
   getAll(params?: { search?: string; category?: string }): Observable<ApiResponse<{ books: Book[] }>> {
-    let query = '';
-    if (params?.search || params?.category) {
-      const parts: string[] = [];
-      if (params.search) parts.push(`search=${encodeURIComponent(params.search)}`);
-      if (params.category) parts.push(`category=${encodeURIComponent(params.category)}`);
-      query = `?${parts.join('&')}`;
+    let httpParams = new HttpParams();
+    if (params?.search?.trim()) {
+      httpParams = httpParams.set('search', params.search.trim());
     }
-    return this.http.get<ApiResponse<{ books: Book[] }>>(`${this.baseUrl}${query}`);
+    if (params?.category?.trim()) {
+      httpParams = httpParams.set('category', params.category.trim());
+    }
+    return this.http.get<ApiResponse<{ books: Book[] }>>(this.baseUrl, { params: httpParams });
   }
 
   getById(id: string): Observable<ApiResponse<{ book: Book }>> {
@@ -38,3 +38,4 @@ export class BookService {
     return this.http.delete<ApiResponse<{ book: Book }>>(`${this.baseUrl}/${id}`);
   }
 }
+

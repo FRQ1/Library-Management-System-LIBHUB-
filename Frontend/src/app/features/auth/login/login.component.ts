@@ -18,12 +18,18 @@ export class LoginComponent {
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]],
+    rememberMe: [true],
   });
 
   loading = false;
   errorMessage = '';
+  showPassword = false;
 
   constructor(private auth: AuthService, private router: Router) {}
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
 
   submit(): void {
     if (this.form.invalid) {
@@ -34,14 +40,16 @@ export class LoginComponent {
     this.loading = true;
     this.errorMessage = '';
 
-    this.auth.login(this.form.getRawValue() as { email: string; password: string }).subscribe({
+    const { email, password } = this.form.getRawValue();
+
+    this.auth.login({ email: email!, password: password! }).subscribe({
       next: () => {
         this.loading = false;
         this.router.navigate(['/']);
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.error?.message || 'Something went wrong. Please try again.';
+        this.errorMessage = err.error?.message || 'Invalid email or password. Please check your credentials.';
       },
     });
   }

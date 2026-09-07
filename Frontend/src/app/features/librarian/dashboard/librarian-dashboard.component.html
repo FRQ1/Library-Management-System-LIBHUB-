@@ -48,8 +48,8 @@
             </tr>
           </thead>
           <tbody>
-            @for (book of books; track book._id) {
-              <tr>
+            @for (book of books; track book._id; let i = $index) {
+              <tr [style.animation-delay]="(i * 40) + 'ms'">
                 <td>
                   <div class="thumb">
                     @if (book.coverImage) {
@@ -75,7 +75,7 @@
                     <a [routerLink]="['/librarian/books', book._id, 'edit']" class="btn btn-secondary btn-sm">
                       <app-icon name="pencil" [size]="13"></app-icon> Edit
                     </a>
-                    <button class="btn btn-danger btn-sm" (click)="deleteBook(book)">
+                    <button class="btn btn-danger btn-sm" (click)="promptDeleteBook(book)">
                       <app-icon name="trash-2" [size]="13"></app-icon> Delete
                     </button>
                   </div>
@@ -88,3 +88,15 @@
     }
   </div>
 </div>
+
+<app-confirm-modal
+  [isOpen]="showDeleteModal"
+  title="Delete Book"
+  [message]="'Are you sure you want to delete &quot;' + (bookToDelete?.title || '') + '&quot;? This cannot be undone.'"
+  confirmText="Delete Book"
+  cancelText="Cancel"
+  [isDanger]="true"
+  (confirmed)="confirmDeleteBook()"
+  (cancelled)="cancelDelete()"
+></app-confirm-modal>
+

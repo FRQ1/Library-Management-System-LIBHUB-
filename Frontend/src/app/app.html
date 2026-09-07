@@ -2,3 +2,65 @@
 <main>
   <router-outlet></router-outlet>
 </main>
+<app-toast></app-toast>
+
+<footer class="app-footer">
+  <div class="footer-container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-crest-row">
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+            <rect width="32" height="32" rx="8" fill="#0F766E"/>
+            <path d="M7 23.5V8.5C7 7.67 7.67 7 8.5 7H15C15.55 7 16 7.45 16 8V23C16 23.55 15.55 24 15 24H8.5C7.67 24 7 23.5 7 23.5Z" fill="#14B8A6"/>
+            <path d="M25 23.5V8.5C25 7.67 24.33 7 23.5 7H17C16.45 7 16 7.45 16 8V23C16 23.55 16.45 24 17 24H23.5C24.33 24 25 23.5 25 23.5Z" fill="#0D9488"/>
+            <path d="M7 23.5C7 23.5 10.5 22.2 16 23.5C21.5 22.2 25 23.5 25 23.5" stroke="#FDE68A" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M16 8V23.5" stroke="#042F2E" stroke-width="1.2"/>
+            <path d="M13 7V13L15 11.8L17 13V7" fill="#F59E0B"/>
+          </svg>
+          <span class="footer-brand-name">LibHub</span>
+        </div>
+        <p class="footer-tagline">
+          Modern digital library management system. Facilitating seamless book discovery, physical copy reservations, and circulation workflows.
+        </p>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-col-title">Browse Genres</h4>
+        <ul class="footer-links">
+          <li><a routerLink="/" [queryParams]="{ category: 'fiction' }">Fiction &amp; Literature</a></li>
+          <li><a routerLink="/" [queryParams]="{ category: 'technology' }">Technology &amp; Programming</a></li>
+          <li><a routerLink="/" [queryParams]="{ category: 'science' }">Science &amp; Nature</a></li>
+          <li><a routerLink="/" [queryParams]="{ category: 'history' }">History &amp; Culture</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-col-title">Circulation Desk</h4>
+        <ul class="footer-info">
+          <li><strong>Monday – Friday:</strong> 8:00 AM – 9:00 PM</li>
+          <li><strong>Saturday:</strong> 9:00 AM – 6:00 PM</li>
+          <li><strong>Sunday:</strong> 11:00 AM – 5:00 PM</li>
+          <li><span class="open-pill">Library Services Active</span></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-col-title">Central Location</h4>
+        <p class="footer-address">
+          LibHub Main Reading Hall<br>
+          42 Cultural District, Athenaeum Way<br>
+          contact&#64;libhub.org
+        </p>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2026 LibHub Library Management System. All rights reserved.</p>
+      <div class="footer-badges">
+        <span>Curated Catalog</span>
+        <span>•</span>
+        <span>Digital Circulation</span>
+      </div>
+    </div>
+  </div>
+</footer>

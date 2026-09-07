@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Reservation } from '../models/reservation.model';
@@ -12,8 +12,11 @@ export class ReservationService {
   constructor(private http: HttpClient) {}
 
   getAll(status?: string): Observable<ApiResponse<{ reservations: Reservation[] }>> {
-    const query = status ? `?status=${status}` : '';
-    return this.http.get<ApiResponse<{ reservations: Reservation[] }>>(`${this.baseUrl}${query}`);
+    let params = new HttpParams();
+    if (status?.trim()) {
+      params = params.set('status', status.trim());
+    }
+    return this.http.get<ApiResponse<{ reservations: Reservation[] }>>(this.baseUrl, { params });
   }
 
   getMyReservations(): Observable<ApiResponse<{ reservations: Reservation[] }>> {

@@ -13,8 +13,8 @@
     </div>
   } @else {
     <div class="reservation-cards">
-      @for (res of reservations; track res._id) {
-        <div class="card reservation-card">
+      @for (res of reservations; track res._id; let i = $index) {
+        <div class="card reservation-card animate-fade-in-up" [style.animation-delay]="(i * 60) + 'ms'">
           <div class="reservation-cover">
             @if (asBook(res.book)?.coverImage) {
               <img [src]="asBook(res.book)?.coverImage | bookCover" [alt]="asBook(res.book)?.title" />
@@ -36,7 +36,7 @@
             }
           </div>
           @if (res.status === 'pending' || res.status === 'ready') {
-            <button class="btn btn-danger btn-sm" (click)="cancel(res)">
+            <button class="btn btn-danger btn-sm" (click)="promptCancel(res)">
               <app-icon name="x" [size]="13"></app-icon> Cancel
             </button>
           }
@@ -45,3 +45,15 @@
     </div>
   }
 </div>
+
+<app-confirm-modal
+  [isOpen]="showCancelModal"
+  title="Cancel Reservation"
+  [message]="'Are you sure you want to cancel your reservation for &quot;' + (asBook(reservationToCancel?.book)?.title || 'this book') + '&quot;?'"
+  confirmText="Cancel Reservation"
+  cancelText="Keep Reservation"
+  [isDanger]="true"
+  (confirmed)="confirmCancel()"
+  (cancelled)="dismissCancelModal()"
+></app-confirm-modal>
+

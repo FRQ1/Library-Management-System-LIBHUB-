@@ -88,4 +88,28 @@
       {{ passwordLoading ? 'Changing...' : 'Change password' }}
     </button>
   </form>
+
+  <div class="card danger-zone-card mt-1">
+    <div class="danger-zone-content">
+      <div class="danger-zone-text">
+        <h3 class="danger-zone-title">Deactivate Account</h3>
+        <p class="danger-zone-desc">Once deactivated, you will not be able to log in or borrow books. Please contact an administrator if you need your account restored.</p>
+      </div>
+      <button type="button" class="btn btn-danger" [disabled]="deactivating" (click)="promptDeactivate()">
+        <app-icon name="alert-circle" [size]="15"></app-icon>
+        {{ deactivating ? 'Deactivating...' : 'Deactivate account' }}
+      </button>
+    </div>
+  </div>
 </div>
+
+<app-confirm-modal
+  [isOpen]="showDeactivateModal"
+  title="Deactivate Account"
+  message="Are you sure you want to deactivate your account? You will be logged out immediately."
+  confirmText="Deactivate My Account"
+  cancelText="Keep My Account"
+  [isDanger]="true"
+  (confirmed)="confirmDeactivate()"
+  (cancelled)="cancelDeactivate()"
+></app-confirm-modal>

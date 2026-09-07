@@ -1,81 +1,287 @@
-<div class="container">
-  <div class="catalog-header animate-fade-in-up">
-    <h1>Book Catalog</h1>
-    <p>Search and browse everything LibHub has to offer.</p>
+<!-- Hero Section with Architectural Library Photography & Featured Books -->
+<section class="catalog-hero">
+  <div class="catalog-hero-bg">
+    <img src="/assets/images/library-hero.jpg" alt="Library Reading Hall" class="hero-bg-img" />
+    <div class="catalog-hero-overlay"></div>
   </div>
 
-  <form class="search-row animate-fade-in-up" style="animation-delay: 60ms" (ngSubmit)="onSearchSubmit()">
-    <div class="search-input-wrap">
-      <app-icon name="search" [size]="17" class="search-icon"></app-icon>
-      <input
-        type="text"
-        class="form-control"
-        placeholder="Search by title or author..."
-        [(ngModel)]="searchTerm"
-        name="search"
-      />
-    </div>
-    <button type="submit" class="btn btn-primary">Search</button>
-  </form>
+  <div class="container hero-container">
+    <div class="hero-grid">
+      <!-- Left Column: Welcome & Search -->
+      <div class="hero-text-content animate-fade-in-up">
+        <div class="hero-badge">
+          <app-icon name="sparkles" [size]="14"></app-icon>
+          <span>LibHub Digital Catalog • City Central Library</span>
+        </div>
+        
+        <h1 class="hero-title">
+          Discover, Borrow &amp; Expand Your Mind
+        </h1>
+        
+        <p class="hero-subtitle">
+          Explore thousands of cataloged books ranging from timeless literary classics to modern technology and science. Reserve in one click, borrow at the desk, and track due dates seamlessly.
+        </p>
 
-  <div class="category-chips animate-fade-in-up" style="animation-delay: 100ms">
-    @for (cat of categories; track cat.value) {
-      <button
-        type="button"
-        class="chip"
-        [class.chip-active]="activeCategory === cat.value"
-        (click)="selectCategory(cat.value)"
-      >
-        {{ cat.label }}
-      </button>
-    }
-  </div>
-
-  @if (loading) {
-    <div class="spinner"></div>
-  } @else if (errorMessage) {
-    <div class="alert alert-danger">
-      <app-icon name="alert-circle" [size]="18"></app-icon>
-      {{ errorMessage }}
-    </div>
-  } @else if (books.length === 0) {
-    <div class="empty-state">
-      <app-icon name="search" [size]="36"></app-icon>
-      <p>No books found. Try a different search or category.</p>
-    </div>
-  } @else {
-    <div class="grid-cards mt-1">
-      @for (book of books; track book._id; let i = $index) {
-        <a class="book-card" [routerLink]="['/books', book._id]" [style.animation-delay.ms]="i * 45">
-          <div class="book-cover">
-            @if (book.coverImage) {
-              <img [src]="book.coverImage | bookCover" [alt]="book.title" />
-            } @else {
-              <div class="book-cover-placeholder">
-                <app-icon name="book-open" [size]="30"></app-icon>
-              </div>
+        <form class="hero-search-form" (ngSubmit)="onSearchSubmit()">
+          <div class="search-field">
+            <app-icon name="search" [size]="18" class="search-field-icon"></app-icon>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Search by title, author, or ISBN (e.g. Orwell, Clean Code, 978...)"
+              [(ngModel)]="searchTerm"
+              name="search"
+            />
+            @if (searchTerm) {
+              <button type="button" class="clear-search-btn" (click)="searchTerm = ''; onSearchSubmit()">
+                <app-icon name="x" [size]="14"></app-icon>
+              </button>
             }
-            <div class="book-cover-overlay">
-              <span class="view-details">
-                <app-icon name="eye" [size]="14"></app-icon> View details
-              </span>
+          </div>
+          <button type="submit" class="btn btn-hero-search">
+            <span>Search</span>
+            <app-icon name="arrow-left" [size]="14" style="transform: rotate(180deg);"></app-icon>
+          </button>
+        </form>
+
+        <!-- Quick highlights badges -->
+        <div class="hero-stats-row">
+          <div class="hero-stat-item">
+            <span class="stat-number">9+</span>
+            <span class="stat-label">Curated Genres</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="hero-stat-item">
+            <span class="stat-number">100%</span>
+            <span class="stat-label">Digital Tracking</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="hero-stat-item">
+            <span class="stat-number">Instant</span>
+            <span class="stat-label">Reservations</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="hero-stat-item">
+            <span class="stat-number">Free</span>
+            <span class="stat-label">Member Access</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Featured Books Spotlight -->
+      @if (featuredBooks.length > 0) {
+        <div class="hero-spotlight animate-fade-in-up" style="animation-delay: 150ms;">
+          <div class="spotlight-card">
+            <div class="spotlight-header">
+              <div class="spotlight-title-wrap">
+                <app-icon name="award" [size]="16" class="spotlight-icon"></app-icon>
+                <span class="spotlight-title">Featured Highlights</span>
+              </div>
+              <span class="spotlight-tag">Staff Pick</span>
+            </div>
+
+            <div class="spotlight-books-row">
+              @for (feat of featuredBooks; track feat._id; let idx = $index) {
+                <a [routerLink]="['/books', feat._id]" class="spotlight-book-item" [title]="feat.title">
+                  <div class="spotlight-cover-wrap">
+                    <img
+                      [src]="feat.coverImage | bookCover"
+                      [alt]="feat.title"
+                      (error)="onImageError($event)"
+                      class="spotlight-cover-img"
+                    />
+                    <span class="spotlight-rank">#{{ idx + 1 }}</span>
+                  </div>
+                  <div class="spotlight-book-info">
+                    <h4 class="spotlight-book-title">{{ feat.title }}</h4>
+                    <p class="spotlight-book-author">{{ feat.author }}</p>
+                    <span class="spotlight-badge" [class.badge-available]="feat.availableCopies > 0">
+                      {{ feat.availableCopies > 0 ? feat.availableCopies + ' available' : 'On Loan' }}
+                    </span>
+                  </div>
+                </a>
+              }
             </div>
           </div>
-          <div class="book-card-body">
-            <h3 class="book-title">{{ book.title }}</h3>
-            <p class="book-author">{{ book.author }}</p>
-            @if (book.availableCopies > 0) {
-              <span class="badge badge-success">
-                <app-icon name="check-circle" [size]="12"></app-icon> Available
-              </span>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Main Catalog Container -->
+<main class="container catalog-main">
+  <!-- Section Title & Category Filters -->
+  <div class="catalog-header animate-fade-in-up">
+    <div class="catalog-title-group">
+      <h2 class="catalog-heading">Browse Books</h2>
+      <p class="catalog-subheading">
+        Showing {{ books.length }} {{ books.length === 1 ? 'title' : 'titles' }}
+        @if (activeCategory) {
+          in <span class="active-cat-name">{{ activeCategory }}</span>
+        }
+      </p>
+    </div>
+
+    <!-- Category Filter Pills -->
+    <div class="category-scroll-wrap">
+      <div class="category-chips">
+        @for (cat of categories; track cat.value) {
+          <button
+            type="button"
+            class="category-chip"
+            [class.active]="activeCategory === cat.value"
+            (click)="selectCategory(cat.value)"
+          >
+            @if (cat.value === '') {
+              <app-icon name="layout-grid" [size]="14"></app-icon>
+            } @else if (cat.value === 'fiction' || cat.value === 'fantasy') {
+              <app-icon name="sparkles" [size]="14"></app-icon>
+            } @else if (cat.value === 'technology' || cat.value === 'science') {
+              <app-icon name="settings" [size]="14"></app-icon>
+            } @else if (cat.value === 'history' || cat.value === 'biography') {
+              <app-icon name="user" [size]="14"></app-icon>
             } @else {
-              <span class="badge badge-danger">
-                <app-icon name="clock" [size]="12"></app-icon> Checked out
-              </span>
+              <app-icon name="bookmark" [size]="14"></app-icon>
             }
-          </div>
-        </a>
+            <span>{{ cat.label }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p class="loading-text">Loading catalog collection...</p>
+    </div>
+  } @else if (errorMessage) {
+    <div class="alert alert-danger animate-fade-in">
+      <app-icon name="alert-circle" [size]="20"></app-icon>
+      <div class="alert-content">
+        <strong>Error loading catalog</strong>
+        <p>{{ errorMessage }}</p>
+      </div>
+      <button class="btn btn-sm btn-secondary" (click)="fetchBooks()">Try Again</button>
+    </div>
+  } @else if (books.length === 0) {
+    <div class="empty-catalog animate-fade-in">
+      <div class="empty-icon-circle">
+        <app-icon name="book-open" [size]="40"></app-icon>
+      </div>
+      <h3>No books found</h3>
+      <p>We couldn't find any books matching "{{ searchTerm || activeCategory }}". Try searching for another keyword or selecting a different genre.</p>
+      <button class="btn btn-secondary mt-1" (click)="searchTerm = ''; activeCategory = ''; fetchBooks()">
+        Reset Filters
+      </button>
+    </div>
+  } @else {
+    <!-- Books Grid -->
+    <div class="books-grid">
+      @for (book of books; track book._id; let i = $index) {
+        <article class="book-card animate-fade-in-up" [style.animation-delay]="(i * 45) + 'ms'">
+          <a [routerLink]="['/books', book._id]" class="book-card-link">
+            <!-- 2:3 Realistic Book Cover Frame -->
+            <div class="book-cover-frame">
+              <div class="book-spine-crease"></div>
+              <img
+                [src]="book.coverImage | bookCover"
+                [alt]="book.title"
+                (error)="onImageError($event)"
+                class="book-img"
+                loading="lazy"
+              />
+              <span class="category-pill category-{{ book.category }}">
+                {{ book.category }}
+              </span>
+
+              <div class="book-cover-hover">
+                <span class="hover-btn">
+                  <app-icon name="eye" [size]="14"></app-icon>
+                  <span>View Details</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Card Body Content -->
+            <div class="book-card-body">
+              <div class="book-meta-top">
+                <span class="book-author" [title]="book.author">{{ book.author }}</span>
+              </div>
+
+              <h3 class="book-title" [title]="book.title">{{ book.title }}</h3>
+
+              @if (book.description) {
+                <p class="book-snippet">{{ book.description }}</p>
+              }
+
+              <div class="book-card-footer">
+                @if (book.availableCopies > 0) {
+                  <div class="availability-badge in-stock">
+                    <span class="status-indicator"></span>
+                    <span class="availability-text">
+                      <strong class="copies-count">{{ book.availableCopies }}</strong>
+                      <span class="copies-label">{{ book.availableCopies === 1 ? 'copy available' : 'copies available' }}</span>
+                    </span>
+                  </div>
+                } @else {
+                  <div class="availability-badge out-of-stock">
+                    <span class="status-indicator"></span>
+                    <span class="availability-text">
+                      <span class="copies-label">Currently on loan</span>
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+          </a>
+        </article>
       }
     </div>
   }
-</div>
+
+  <!-- Feature Highlights / Library Perks -->
+  <section class="library-services-section animate-fade-in-up">
+    <div class="services-header">
+      <span class="services-tag">Member Services</span>
+      <h2 class="services-title">How LibHub Works for You</h2>
+      <p class="services-subtitle">A unified modern library experience designed for avid readers, students, and researchers.</p>
+    </div>
+
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon-box">
+          <app-icon name="book-open" [size]="22"></app-icon>
+        </div>
+        <h3 class="service-card-title">Curated Digital Catalog</h3>
+        <p class="service-card-desc">Browse rich collections with verified ISBNs, high-resolution covers, detailed summaries, and real-time inventory.</p>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon-box">
+          <app-icon name="bookmark" [size]="22"></app-icon>
+        </div>
+        <h3 class="service-card-title">One-Click Reservations</h3>
+        <p class="service-card-desc">Reserve popular books currently checked out. We'll hold your copy as soon as it's returned to the counter.</p>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon-box">
+          <app-icon name="clock" [size]="22"></app-icon>
+        </div>
+        <h3 class="service-card-title">Due-Date Tracking</h3>
+        <p class="service-card-desc">Monitor your active loans, renewal eligibility, and due dates effortlessly from your personal member dashboard.</p>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon-box">
+          <app-icon name="shield-check" [size]="22"></app-icon>
+        </div>
+        <h3 class="service-card-title">Librarian Operations</h3>
+        <p class="service-card-desc">Streamlined circulation desks for librarians to ingest catalog titles, issue borrow tickets, and process quick returns.</p>
+      </div>
+    </div>
+  </section>
+</main>

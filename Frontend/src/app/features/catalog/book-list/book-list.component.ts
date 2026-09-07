@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { BookService } from '../../../core/services/book.service';
 import { Book, BookCategory } from '../../../core/models/book.model';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
@@ -29,6 +29,9 @@ const CATEGORIES: { value: BookCategory | ''; label: string }[] = [
   styleUrl: './book-list.component.css',
 })
 export class BookListComponent implements OnInit {
+  private bookService = inject(BookService);
+  private route = inject(ActivatedRoute);
+
   categories = CATEGORIES;
   books: Book[] = [];
   loading = true;
@@ -37,10 +40,24 @@ export class BookListComponent implements OnInit {
   searchTerm = '';
   activeCategory: BookCategory | '' = '';
 
-  constructor(private bookService: BookService) {}
+  get featuredBooks(): Book[] {
+    return this.books.slice(0, 3);
+  }
+
+  onImageError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = '/assets/images/book-placeholder.svg';
+    }
+  }
 
   ngOnInit(): void {
-    this.fetchBooks();
+    this.route.queryParams.subscribe((params) => {
+      if (params['category'] !== undefined) {
+        this.activeCategory = (params['category'] || '') as BookCategory | '';
+      }
+      this.fetchBooks();
+    });
   }
 
   fetchBooks(): void {
@@ -70,3 +87,4 @@ export class BookListComponent implements OnInit {
     this.fetchBooks();
   }
 }
+

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { User } from '../models/user.model';
@@ -34,8 +34,11 @@ export class UserService {
 
   // --- admin ---
   getAll(role?: string): Observable<ApiResponse<{ users: User[] }>> {
-    const query = role ? `?role=${role}` : '';
-    return this.http.get<ApiResponse<{ users: User[] }>>(`${this.baseUrl}${query}`);
+    let params = new HttpParams();
+    if (role?.trim()) {
+      params = params.set('role', role.trim());
+    }
+    return this.http.get<ApiResponse<{ users: User[] }>>(this.baseUrl, { params });
   }
 
   getById(id: string): Observable<ApiResponse<{ user: User }>> {

@@ -5,16 +5,26 @@ import { UserService } from '../../core/services/user.service';
 import { AuthService } from '../../core/services/auth.service';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { UserAvatarPipe } from '../../core/pipes/media-url.pipe';
+import { validateProfilePictureFile } from '../../core/utils/file-validation';
+import { ToastService } from '../../shared/components/toast/toast.service';
+import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IconComponent, UserAvatarPipe],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent, UserAvatarPipe, ConfirmModalComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
 })
 export class ProfileComponent implements OnInit {
   private fb = inject(FormBuilder);
+  private userService = inject(UserService);
+  private toast = inject(ToastService);
+  public auth = inject(AuthService);
+
+  // Deactivate account modal state
+  showDeactivateModal = false;
+  deactivating = false;
 
   profileForm = this.fb.group({
     name: ['', Validators.required],
@@ -41,8 +51,6 @@ export class ProfileComponent implements OnInit {
   pictureMessage = '';
   pictureError = false;
 
-  constructor(private userService: UserService, public auth: AuthService) {}
-
   ngOnInit(): void {
     const user = this.auth.currentUser();
     if (user) {
@@ -64,12 +72,14 @@ export class ProfileComponent implements OnInit {
         this.profileLoading = false;
         this.profileError = false;
         this.profileMessage = 'Profile updated successfully.';
+        this.toast.success('Profile updated successfully.');
         this.auth.updateStoredUser(res.data.user);
       },
       error: (err) => {
         this.profileLoading = false;
         this.profileError = true;
         this.profileMessage = err.error?.message || 'Could not update your profile.';
+        this.toast.error(this.profileMessage);
       },
     });
   }
@@ -90,25 +100,44 @@ export class ProfileComponent implements OnInit {
           this.passwordLoading = false;
           this.passwordError = false;
           this.passwordMessage = 'Password changed successfully.';
+          this.toast.success('Password changed successfully.');
           this.passwordForm.reset();
         },
         error: (err) => {
           this.passwordLoading = false;
           this.passwordError = true;
           this.passwordMessage = err.error?.message || 'Could not change your password.';
+          this.toast.error(this.passwordMessage);
         },
       });
   }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.selectedFile = input.files?.[0] || null;
+    const file = input.files?.[0] || null;
 
-    if (this.selectedFile) {
-      const reader = new FileReader();
-      reader.onload = () => (this.previewUrl = reader.result as string);
-      reader.readAsDataURL(this.selectedFile);
+    if (!file) {
+      this.selectedFile = null;
+      this.previewUrl = null;
+      return;
     }
+
+    const validation = validateProfilePictureFile(file);
+    if (!validation.isValid) {
+      this.pictureError = true;
+      this.pictureMessage = validation.error || 'Invalid file.';
+      this.toast.error(this.pictureMessage);
+      input.value = '';
+      return;
+    }
+
+    this.pictureError = false;
+    this.pictureMessage = '';
+    this.selectedFile = file;
+
+    const reader = new FileReader();
+    reader.onload = () => (this.previewUrl = reader.result as string);
+    reader.readAsDataURL(this.selectedFile);
   }
 
   uploadPicture(): void {
@@ -125,6 +154,7 @@ export class ProfileComponent implements OnInit {
         this.pictureLoading = false;
         this.pictureError = false;
         this.pictureMessage = 'Profile picture updated.';
+        this.toast.success('Profile picture updated.');
         this.auth.updateStoredUser(res.data.user);
         this.selectedFile = null;
       },
@@ -132,7 +162,34 @@ export class ProfileComponent implements OnInit {
         this.pictureLoading = false;
         this.pictureError = true;
         this.pictureMessage = err.error?.message || 'Could not upload your picture.';
+        this.toast.error(this.pictureMessage);
+      },
+    });
+  }
+
+  promptDeactivate(): void {
+    this.showDeactivateModal = true;
+  }
+
+  cancelDeactivate(): void {
+    this.showDeactivateModal = false;
+  }
+
+  confirmDeactivate(): void {
+    this.deactivating = true;
+    this.showDeactivateModal = false;
+
+    this.userService.deactivateMe().subscribe({
+      next: () => {
+        this.deactivating = false;
+        this.toast.success('Your account has been deactivated.');
+        this.auth.logout();
+      },
+      error: (err) => {
+        this.deactivating = false;
+        this.toast.error(err.error?.message || 'Could not deactivate your account.');
       },
     });
   }
 }
+

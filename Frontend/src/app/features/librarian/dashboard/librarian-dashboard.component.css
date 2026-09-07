@@ -29,9 +29,10 @@
 .thumb {
   width: 34px;
   height: 46px;
-  border-radius: 5px;
+  border-radius: 4px;
   overflow: hidden;
   background: var(--color-primary-light);
+  border: 1px solid var(--color-border);
   color: var(--color-primary);
   display: flex;
   align-items: center;

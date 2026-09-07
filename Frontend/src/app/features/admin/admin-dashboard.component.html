@@ -24,22 +24,22 @@
         <div class="spinner"></div>
       } @else {
         <div class="metric-cards">
-          <div class="card metric-card">
+          <div class="card metric-card animate-fade-in-up" style="animation-delay: 50ms;">
             <div class="metric-icon"><app-icon name="book-open" [size]="20"></app-icon></div>
             <span class="metric-value">{{ reports.totalBooks }}</span>
             <span class="metric-label">Total Books</span>
           </div>
-          <div class="card metric-card">
+          <div class="card metric-card animate-fade-in-up" style="animation-delay: 100ms;">
             <div class="metric-icon"><app-icon name="refresh-cw" [size]="20"></app-icon></div>
             <span class="metric-value">{{ reports.activeLoans }}</span>
             <span class="metric-label">Active Loans</span>
           </div>
-          <div class="card metric-card">
+          <div class="card metric-card animate-fade-in-up" style="animation-delay: 150ms;">
             <div class="metric-icon metric-icon-danger"><app-icon name="clock" [size]="20"></app-icon></div>
             <span class="metric-value">{{ reports.overdueLoans }}</span>
             <span class="metric-label">Overdue Books</span>
           </div>
-          <div class="card metric-card">
+          <div class="card metric-card animate-fade-in-up" style="animation-delay: 200ms;">
             <div class="metric-icon"><app-icon name="user-circle" [size]="20"></app-icon></div>
             <span class="metric-value">{{ reports.activeUsers }}</span>
             <span class="metric-label">Active Users</span>
@@ -50,7 +50,7 @@
       @if (loadingUsers) {
         <div class="spinner"></div>
       } @else {
-        <div class="table-wrap">
+        <div class="table-wrap animate-fade-in-up">
           <table>
             <thead>
               <tr>
@@ -62,8 +62,8 @@
               </tr>
             </thead>
             <tbody>
-              @for (user of (activeTab === 'librarians' ? librarians : users); track user.id) {
-                <tr>
+              @for (user of (activeTab === 'librarians' ? librarians : users); track getUserId(user); let i = $index) {
+                <tr [style.animation-delay]="(i * 40) + 'ms'">
                   <td>{{ user.name }}</td>
                   <td>{{ user.email }}</td>
                   <td>
@@ -85,7 +85,7 @@
                       <button class="btn btn-secondary btn-sm" (click)="toggleStatus(user)">
                         {{ user.isActive ? 'Suspend' : 'Activate' }}
                       </button>
-                      <button class="btn btn-danger btn-sm" (click)="deleteUser(user)">
+                      <button class="btn btn-danger btn-sm" (click)="promptDeleteUser(user)">
                         <app-icon name="trash-2" [size]="13"></app-icon> Delete
                       </button>
                     </div>
@@ -99,3 +99,15 @@
     }
   </div>
 </div>
+
+<app-confirm-modal
+  [isOpen]="showDeleteModal"
+  title="Delete User"
+  [message]="'Are you sure you want to delete user ' + (userToDelete?.name || '') + '? This cannot be undone.'"
+  confirmText="Delete User"
+  cancelText="Cancel"
+  [isDanger]="true"
+  (confirmed)="confirmDeleteUser()"
+  (cancelled)="cancelDelete()"
+></app-confirm-modal>
+

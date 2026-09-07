@@ -27,8 +27,8 @@
             </tr>
           </thead>
           <tbody>
-            @for (res of reservations; track res._id) {
-              <tr>
+            @for (res of reservations; track res._id; let i = $index) {
+              <tr [style.animation-delay]="(i * 40) + 'ms'">
                 <td>{{ asUser(res.member)?.name || 'Unknown' }}</td>
                 <td>{{ asBook(res.book)?.title || 'Unknown' }}</td>
                 <td>{{ res.requestDate | date: 'mediumDate' }}</td>
@@ -46,7 +46,7 @@
                       <button class="btn btn-primary btn-sm" (click)="markReady(res)">
                         <app-icon name="check" [size]="13"></app-icon> Mark Ready
                       </button>
-                      <button class="btn btn-danger btn-sm" (click)="cancel(res)">
+                      <button class="btn btn-danger btn-sm" (click)="promptCancel(res)">
                         <app-icon name="x" [size]="13"></app-icon> Cancel
                       </button>
                     </div>
@@ -60,3 +60,15 @@
     }
   </div>
 </div>
+
+<app-confirm-modal
+  [isOpen]="showCancelModal"
+  title="Cancel Reservation"
+  [message]="'Cancel reservation of &quot;' + (asBook(reservationToCancel?.book)?.title || 'this book') + '&quot; for ' + (asUser(reservationToCancel?.member)?.name || 'member') + '?'"
+  confirmText="Cancel Reservation"
+  cancelText="Keep Reservation"
+  [isDanger]="true"
+  (confirmed)="confirmCancel()"
+  (cancelled)="dismissCancelModal()"
+></app-confirm-modal>
+

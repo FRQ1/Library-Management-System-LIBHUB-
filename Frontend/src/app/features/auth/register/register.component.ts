@@ -16,14 +16,14 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink, IconComponent],
   templateUrl: './register.component.html',
-  styleUrl: '../login/login.component.css',
+  styleUrl: './register.component.css',
 })
 export class RegisterComponent {
   private fb = inject(FormBuilder);
 
   form = this.fb.group(
     {
-      name: ['', [Validators.required, Validators.minLength(2)]],
+      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', [Validators.required]],
@@ -33,9 +33,18 @@ export class RegisterComponent {
 
   loading = false;
   errorMessage = '';
-  successMessage = '';
+  showPassword = false;
+  showConfirmPassword = false;
 
   constructor(private auth: AuthService, private router: Router) {}
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
 
   submit(): void {
     if (this.form.invalid) {
@@ -47,14 +56,14 @@ export class RegisterComponent {
     this.errorMessage = '';
 
     const { name, email, password } = this.form.getRawValue();
-    this.auth.register({ name: name!, email: email!, password: password! }).subscribe({
+    this.auth.register({ name: name!.trim(), email: email!.trim(), password: password! }).subscribe({
       next: () => {
         this.loading = false;
         this.router.navigate(['/']);
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.error?.message || 'Something went wrong. Please try again.';
+        this.errorMessage = err.error?.message || 'Could not create account. Please check your information or try again.';
       },
     });
   }

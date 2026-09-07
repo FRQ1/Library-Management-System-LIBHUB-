@@ -74,8 +74,8 @@
             </tr>
           </thead>
           <tbody>
-            @for (loan of loans; track loan._id) {
-              <tr>
+            @for (loan of loans; track loan._id; let i = $index) {
+              <tr [style.animation-delay]="(i * 40) + 'ms'">
                 <td>{{ asUser(loan.member)?.name || 'Unknown' }}</td>
                 <td>{{ asBook(loan.book)?.title || 'Unknown' }}</td>
                 <td>{{ loan.dueDate | date: 'mediumDate' }}</td>
@@ -94,7 +94,7 @@
                       <button class="btn btn-secondary btn-sm" (click)="renew(loan)">
                         <app-icon name="refresh-cw" [size]="13"></app-icon> Renew
                       </button>
-                      <button class="btn btn-primary btn-sm" (click)="returnBook(loan)">
+                      <button class="btn btn-primary btn-sm" (click)="promptReturn(loan)">
                         <app-icon name="check" [size]="13"></app-icon> Return
                       </button>
                     </div>
@@ -108,3 +108,15 @@
     }
   </div>
 </div>
+
+<app-confirm-modal
+  [isOpen]="showReturnModal"
+  title="Process Return"
+  [message]="'Confirm return for &quot;' + (asBook(loanToReturn?.book)?.title || 'this book') + '&quot; borrowed by ' + (asUser(loanToReturn?.member)?.name || 'member') + '?'"
+  confirmText="Mark as Returned"
+  cancelText="Cancel"
+  [isDanger]="false"
+  (confirmed)="confirmReturn()"
+  (cancelled)="cancelReturn()"
+></app-confirm-modal>
+

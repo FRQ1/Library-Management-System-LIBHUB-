@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Loan } from '../models/loan.model';
@@ -12,8 +12,11 @@ export class LoanService {
   constructor(private http: HttpClient) {}
 
   getAll(status?: string): Observable<ApiResponse<{ loans: Loan[] }>> {
-    const query = status ? `?status=${status}` : '';
-    return this.http.get<ApiResponse<{ loans: Loan[] }>>(`${this.baseUrl}${query}`);
+    let params = new HttpParams();
+    if (status?.trim()) {
+      params = params.set('status', status.trim());
+    }
+    return this.http.get<ApiResponse<{ loans: Loan[] }>>(this.baseUrl, { params });
   }
 
   getOverdue(): Observable<ApiResponse<{ loans: Loan[] }>> {

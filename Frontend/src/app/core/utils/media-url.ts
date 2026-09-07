@@ -15,8 +15,9 @@ function resolveMediaUrl(value: string | null | undefined, folder: 'books' | 'us
   return `${environment.apiUrl}/uploads/${folder}/${value}`;
 }
 
-export function bookCoverUrl(coverImage: string | null | undefined): string | null {
-  return resolveMediaUrl(coverImage, 'books');
+export function bookCoverUrl(coverImage: string | null | undefined): string {
+  const resolved = resolveMediaUrl(coverImage, 'books');
+  return resolved || '/assets/images/book-placeholder.svg';
 }
 
 export function userAvatarUrl(profilePicture: string | null | undefined): string | null {

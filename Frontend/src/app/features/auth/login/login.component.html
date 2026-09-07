@@ -1,50 +1,123 @@
-<div class="auth-page">
-  <div class="auth-branding">
-    <div class="auth-branding-content">
-      <div class="crest crest-lg">
-        <app-icon name="library" [size]="28" [strokeWidth]="2"></app-icon>
-      </div>
-      <h1 class="brand-title">LibHub</h1>
-      <p class="brand-tagline">Your library, organized. Browse the catalog, borrow books, and track due dates all in one place.</p>
+<div class="auth-page-bg" id="auth-login-page">
+  <div class="auth-bg-overlay"></div>
+
+  <div class="auth-card" id="login-card">
+    <!-- Brand Header -->
+    <div class="brand-header">
+      <a routerLink="/" class="brand-crest-link" id="brand-home-link" aria-label="Go to LibHub Home">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
+          <rect width="32" height="32" rx="8" fill="#0F766E"/>
+          <path d="M7 23.5V8.5C7 7.67 7.67 7 8.5 7H15C15.55 7 16 7.45 16 8V23C16 23.55 15.55 24 15 24H8.5C7.67 24 7 23.5 7 23.5Z" fill="#14B8A6"/>
+          <path d="M25 23.5V8.5C25 7.67 24.33 7 23.5 7H17C16.45 7 16 7.45 16 8V23C16 23.55 16.45 24 17 24H23.5C24.33 24 25 23.5 25 23.5Z" fill="#0D9488"/>
+          <path d="M7 23.5C7 23.5 10.5 22.2 16 23.5C21.5 22.2 25 23.5 25 23.5" stroke="#FDE68A" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M16 8V23.5" stroke="#042F2E" stroke-width="1.2"/>
+          <path d="M13 7V13L15 11.8L17 13V7" fill="#F59E0B"/>
+        </svg>
+      </a>
+      <h1 class="auth-title">Welcome back</h1>
+      <p class="auth-subtitle">Sign in to your LibHub account</p>
     </div>
-  </div>
 
-  <div class="auth-form-wrap">
-    <form class="auth-card" [formGroup]="form" (ngSubmit)="submit()">
-      <h2>Welcome back</h2>
-      <p>Log in to your LibHub account</p>
+    <!-- Segmented Navigation Switcher -->
+    <nav class="auth-tabs" aria-label="Authentication Selector">
+      <a routerLink="/login" class="tab-btn active" id="tab-sign-in" aria-current="page">Sign In</a>
+      <a routerLink="/register" class="tab-btn" id="tab-register">Create Account</a>
+    </nav>
 
-      @if (errorMessage) {
-        <div class="alert alert-danger">
-          <app-icon name="alert-circle" [size]="18"></app-icon>
-          {{ errorMessage }}
+    <!-- Error Alert -->
+    @if (errorMessage) {
+      <div class="alert alert-danger" role="alert" id="login-error-alert">
+        <app-icon name="alert-circle" [size]="18"></app-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+    }
+
+    <!-- Sign In Form -->
+    <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form" id="login-form">
+      <!-- Email Field -->
+      <div class="form-group">
+        <label for="login-email" class="form-label">Email address</label>
+        <div class="input-container" [class.input-error]="form.get('email')?.touched && form.get('email')?.invalid">
+          <span class="input-icon">
+            <app-icon name="mail" [size]="18"></app-icon>
+          </span>
+          <input
+            id="login-email"
+            type="email"
+            class="input-field"
+            formControlName="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+            required
+          />
         </div>
-      }
-
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input id="email" type="email" class="form-control" formControlName="email" placeholder="you@example.com" />
         @if (form.get('email')?.touched && form.get('email')?.invalid) {
-          <div class="form-error">Please enter a valid email address.</div>
+          <span class="form-error">Please enter a valid email address.</span>
         }
       </div>
 
+      <!-- Password Field -->
       <div class="form-group">
-        <label for="password">Password</label>
-        <input id="password" type="password" class="form-control" formControlName="password" placeholder="••••••••" />
+        <div class="label-row">
+          <label for="login-password" class="form-label">Password</label>
+        </div>
+        <div class="input-container" [class.input-error]="form.get('password')?.touched && form.get('password')?.invalid">
+          <span class="input-icon">
+            <app-icon name="lock" [size]="18"></app-icon>
+          </span>
+          <input
+            id="login-password"
+            [type]="showPassword ? 'text' : 'password'"
+            class="input-field"
+            formControlName="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            required
+          />
+          <button
+            type="button"
+            class="toggle-password"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+            id="password-toggle-btn"
+          >
+            <app-icon [name]="showPassword ? 'eye-off' : 'eye'" [size]="18"></app-icon>
+          </button>
+        </div>
         @if (form.get('password')?.touched && form.get('password')?.invalid) {
-          <div class="form-error">Password is required.</div>
+          <span class="form-error">Password is required.</span>
         }
       </div>
 
-      <button type="submit" class="btn btn-primary btn-block mt-1" [disabled]="loading">
-        <app-icon name="log-in" [size]="16"></app-icon>
-        {{ loading ? 'Logging in...' : 'Log in' }}
-      </button>
+      <!-- Remember Me -->
+      <div class="form-options">
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="rememberMe" id="remember-me-checkbox" />
+          <span>Remember me</span>
+        </label>
+      </div>
 
-      <p class="auth-footer">
-        Don't have an account? <a routerLink="/register">Register</a>
-      </p>
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="submit-btn"
+        [disabled]="loading"
+        id="login-submit-button"
+      >
+        @if (loading) {
+          <span class="spinner"></span>
+          <span>Signing in...</span>
+        } @else {
+          <span>Sign In</span>
+          <app-icon name="arrow-right" [size]="16"></app-icon>
+        }
+      </button>
     </form>
+
+    <!-- Bottom Link -->
+    <div class="auth-footer">
+      <span>Don't have an account?</span>
+      <a routerLink="/register" class="auth-link" id="goto-register-link">Create an account</a>
+    </div>
   </div>
 </div>
