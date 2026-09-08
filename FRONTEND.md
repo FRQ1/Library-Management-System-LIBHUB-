@@ -1,28 +1,29 @@
-# LibHub Frontend — Complete System Documentation
+# LibHub Frontend — System Documentation
 
-## 1. Executive Summary
+## 1. Overview
 
-**LibHub Frontend** is the user-facing web application for the LibHub Library Management System. It is built with **Angular 21** using standalone components, modern reactive forms, TypeScript, and a tailored library-themed design system.
+**LibHub Frontend** is the Angular client for the LibHub Library Management System, built with **Angular 22** using standalone components and **zoneless change detection** (`provideZonelessChangeDetection()` — there is no `zone.js` dependency in this project).
 
-The application serves three distinct user roles with dedicated interfaces and permissions:
-- **Members (Patrons):** Search and filter catalog books, reserve unavailable titles, monitor active loans and return due dates, view borrowing history, update personal profiles, and deactivate accounts.
-- **Librarians:** Manage the library catalog (create, edit, delete books with cover images), issue book loans (checkout), renew loans, process book returns, and fulfill member reservations.
-- **Administrators:** Oversee platform users (activate/suspend accounts, update user roles, delete accounts), monitor high-level system analytics (total volumes, active borrowings, overdue counts), and access all librarian catalog tooling.
+Three role-based experiences share one app:
+- **Members:** browse/search the catalog, reserve unavailable books, view their own loans and reservations, manage their profile.
+- **Librarians:** manage the book catalog (create/edit/delete, cover uploads), process checkouts/renewals/returns, and move reservations through their lifecycle (mark ready → check out).
+- **Admins:** everything librarians can do, plus user management (activate/suspend, change role, delete) and a dashboard with system counts.
 
 ---
 
-## 2. Technology Stack & Architectural Highlights
+## 2. Tech Stack
 
-| Layer / Concern | Technology | Notes |
-|---|---|---|
-| **Framework** | Angular 21 (`@angular/core`, `@angular/common`, `@angular/router`) | Modern Standalone Component architecture (no NgModules required) |
-| **Change Detection** | Zone.js | Consistent asynchronous reactivity and change propagation |
-| **Language** | TypeScript 5.9 | Strict type checking, interfaces for all data contracts |
-| **Styling & Theme** | Tailwind CSS + CSS Custom Properties | Deep Emerald (`#0F766E`), Slate Navy (`#1E293B`), Warm Brass accents, Fraunces serif headings, and Inter sans body text |
-| **Forms & Validation** | ReactiveFormsModule + Custom Validators | Strongly-typed form groups, real-time input error states, client-side 5MB file format validation |
-| **Icons** | Custom Inline SVG (`IconComponent`) | Lightweight, self-contained Lucide/Feather stroke icons without heavy third-party dependencies |
-| **Notifications & Dialogs** | `ToastService` + `ConfirmModalComponent` | Accessible in-app toast toasts and non-blocking confirmation modals (replaces native `window.alert` / `window.confirm`) |
-| **Media Resolution** | `BookCoverPipe`, `UserAvatarPipe` | Automatic prefixing and SVG fallbacks for uploaded media |
+| Concern | Technology |
+|---|---|
+| Framework | Angular 22, standalone components (no NgModules) |
+| Change detection | Zoneless (`provideZonelessChangeDetection`) — no `zone.js` |
+| Language | TypeScript 6.0 |
+| Styling | **Plain CSS** with a shared set of custom properties defined once in `styles.css` (`--color-primary`, `--color-bg`, etc.) plus one `.css` file per component. **No Tailwind** — there's no `tailwind.config`, no PostCSS plugin, and no `@tailwind`/`@apply` anywhere in the project. |
+| Forms | `ReactiveFormsModule` + hand-written validators |
+| Icons | Custom inline-SVG `IconComponent` (no icon library dependency) |
+| Notifications / dialogs | `ToastService` + `ConfirmModalComponent` (native `alert`/`confirm` are not used) |
+| Media | `BookCoverPipe` / `UserAvatarPipe` for resolving uploaded file paths |
+| Dev-server proxy | `proxy.conf.json` forwards `/api/v1` → `http://localhost:5000` so the app can call relative API paths with no CORS friction in dev |
 
 ---
 
@@ -31,176 +32,139 @@ The application serves three distinct user roles with dedicated interfaces and p
 ```text
 Frontend/src/
 ├── app/
-│   ├── app.config.ts                  # Application configuration (router, HttpClient, zone detection)
-│   ├── app.routes.ts                  # Central routing table with auth & role guards
-│   ├── app.ts                         # Root application shell component
-│   ├── app.html                       # Global layout with Navbar, ToastContainer, and router-outlet
-│   ├── app.css                        # App-level styling & sticky layout rules
+│   ├── app.config.ts               # provideZonelessChangeDetection, router, HttpClient + auth interceptor
+│   ├── app.routes.ts
+│   ├── app.ts / app.html / app.css # Root shell: navbar, toast container, router-outlet
 │   │
-│   ├── core/                          # Singleton services, guards, interceptors, models
+│   ├── core/
 │   │   ├── guards/
-│   │   │   ├── auth.guard.ts          # Redirects unauthenticated users to /auth/login
-│   │   │   └── role.guard.ts          # Protects routes based on required user roles
+│   │   │   ├── auth.guard.ts       # authGuard — redirects to /login if not authenticated
+│   │   │   └── role.guard.ts       # roleGuard(allowedRoles[]) — factory, checks auth + role
 │   │   ├── interceptors/
-│   │   │   └── auth.interceptor.ts    # Attaches JWT Bearer token; handles 401 unauthenticated logouts
-│   │   ├── models/
-│   │   │   ├── api-response.model.ts  # Standard backend envelope { status, message, data }
-│   │   │   ├── book.model.ts          # Book entity, categories, and query parameter interfaces
-│   │   │   ├── loan.model.ts          # Loan entity, status enums, checkout/renew interfaces
-│   │   │   ├── reservation.model.ts   # Reservation entity and status enums
-│   │   │   └── user.model.ts          # User entity, roles, and ID normalization helpers
+│   │   │   └── auth.interceptor.ts # Attaches Bearer token to outgoing requests
+│   │   ├── models/                 # book / loan / reservation / user / api-response interfaces
 │   │   ├── pipes/
-│   │   │   └── media-url.pipe.ts      # BookCoverPipe & UserAvatarPipe for resolving uploads
+│   │   │   └── media-url.pipe.ts   # BookCoverPipe, UserAvatarPipe
 │   │   ├── services/
-│   │   │   ├── auth.service.ts        # Login, registration, token persistence, user state
-│   │   │   ├── book.service.ts        # Book catalog queries, CRUD, cover image uploads
-│   │   │   ├── loan.service.ts        # Checkouts, returns, extensions, overdue loans
-│   │   │   ├── navigation.service.ts  # Centralized, role-based sidebar navigation items
-│   │   │   ├── reservation.service.ts # Book reservations creation, cancellation, fulfillment
-│   │   │   └── user.service.ts        # Profile management, admin user management
+│   │   │   ├── auth.service.ts     # signals-based session state, localStorage persistence
+│   │   │   ├── book.service.ts
+│   │   │   ├── loan.service.ts
+│   │   │   ├── reservation.service.ts
+│   │   │   ├── user.service.ts
+│   │   │   └── navigation.service.ts
 │   │   └── utils/
-│   │       ├── file-validation.ts     # 5MB size and JPG/PNG/WEBP image type validation
-│   │       └── media-url.ts           # Media URL resolution with SVG placeholder fallbacks
+│   │       ├── file-validation.ts  # 5MB + JPG/PNG/WEBP checks
+│   │       └── media-url.ts
 │   │
-│   ├── features/                      # Route-level views & pages
-│   │   ├── admin/
-│   │   │   ├── admin-dashboard.component.ts   # User management table & library reports
-│   │   │   ├── admin-dashboard.component.html
-│   │   │   └── admin-dashboard.component.css
+│   ├── features/
+│   │   ├── admin/                  # admin-dashboard.component.*
 │   │   ├── auth/
-│   │   │   ├── login/                 # User login form with responsive sanctuary backdrop
-│   │   │   └── register/              # User account registration
+│   │   │   ├── login/
+│   │   │   └── register/
 │   │   ├── catalog/
-│   │   │   ├── book-list/             # Public book browsing, category chips, search bar
-│   │   │   └── book-details/          # Book details view, reservation button, librarian actions
+│   │   │   ├── book-list/          # served at the app root '/'
+│   │   │   └── book-details/       # 'books/:id'
 │   │   ├── librarian/
-│   │   │   ├── dashboard/             # Librarian catalog overview with search & filters
-│   │   │   ├── book-form/             # Add and Edit book form with image drag-and-drop
-│   │   │   ├── loans-management/      # Active loans, return processing, checkouts
-│   │   │   └── reservations-management/ # Pending & ready reservation queues
+│   │   │   ├── dashboard/          # librarian-dashboard.component.* — 'librarian/books'
+│   │   │   ├── book-form/          # add/edit, 'librarian/books/new' and 'librarian/books/:id/edit'
+│   │   │   ├── loans-management/   # 'librarian/loans'
+│   │   │   └── reservations-management/  # 'librarian/reservations'
 │   │   ├── member/
-│   │   │   ├── my-loans/              # Member's active and returned loans with due dates
-│   │   │   └── my-reservations/       # Member's pending and ready reservations
-│   │   └── profile/
-│   │       ├── profile.component.ts   # Info update, avatar upload, password change, deactivation
-│   │       ├── profile.component.html
-│   │       └── profile.component.css
+│   │   │   ├── my-loans/           # 'my-loans'
+│   │   │   └── my-reservations/    # 'my-reservations'
+│   │   └── profile/                # 'profile'
 │   │
-│   └── shared/                        # Reusable standalone components
-│       └── components/
-│           ├── confirm-modal/         # Accessible confirmation dialog modal
-│           ├── icon/                  # Stroke SVG icon renderer
-│           ├── navbar/                # Top navigation with role links and user dropdown
-│           ├── sidebar/               # Reusable sidebar for librarian and admin views
-│           └── toast/                 # In-app toast notification container and service
+│   └── shared/components/
+│       ├── confirm-modal/
+│       ├── icon/
+│       ├── navbar/
+│       ├── sidebar/
+│       └── toast/
 │
-├── assets/images/                     # Static imagery (hero banners, sanctuary images)
 ├── environments/
-│   ├── environment.ts                 # Production environment settings
-│   └── environment.development.ts     # Local development settings (API baseUrl: /api/v1)
-├── index.html                         # HTML5 entry with Google Fonts (Fraunces & Inter)
-├── main.ts                            # Angular bootstrap entry
-└── styles.css                         # Global CSS resets, utility variables, card/button styles
+│   ├── environment.ts              # production
+│   └── environment.development.ts  # apiUrl: '/api/v1' (routed through proxy.conf.json in dev)
+├── index.html
+├── main.ts
+└── styles.css
 ```
 
 ---
 
-## 4. State Management & Core Services
+## 4. Core Services
 
-### 4.1. `AuthService` (`core/services/auth.service.ts`)
-- **State Properties:**
-  - `currentUser: User | null` — The currently authenticated user object.
-  - `token: string | null` — The active JWT Bearer token stored in `localStorage`.
-- **Key Methods:**
-  - `login(credentials)`: Authenticates against `POST /api/v1/auth/login`, saves JWT to `localStorage`, and updates active user state.
-  - `register(payload)`: Creates a new user via `POST /api/v1/auth/register` and establishes session.
-  - `logout()`: Clears `localStorage` and routes the user back to `/auth/login`.
-  - `hasRole(...roles)`: Boolean check verifying if the authenticated user possesses any of the required roles.
+### 4.1 `AuthService`
+Signal-based (`signal`/`computed`, not `BehaviorSubject`). `currentUser`, `isLoggedIn`, `role` are computed signals backed by `localStorage` (`libhub_token`, `libhub_user`) so a page refresh keeps the session. `login()`/`register()` call the backend and populate session state via `tap`; `logout()` clears storage and navigates to `/login`.
 
-### 4.2. `NavigationService` (`core/services/navigation.service.ts`)
-Centralizes the sidebar navigation items for administrative and librarian workflows, preventing link mismatches:
-- Provides `getLibrarianNavItems()`: Books Catalog, Loans & Returns, Reservations Queue, My Profile.
-- Provides `getAdminNavItems()`: Books Catalog, Loans & Returns, Reservations Queue, User Administration, My Profile.
+### 4.2 `BookService`
+`getAll({ search?, category? })`, `getById`, `create(FormData)`, `update(id, FormData)`, `delete(id)`. Only `search` and `category` query params exist — there's no pagination, sorting, or `available` filter on either side.
 
-### 4.3. `BookService` (`core/services/book.service.ts`)
-- Communicates with `/api/v1/books`.
-- Uses Angular's `HttpParams` for query filtering: `search`, `category`, `available`, `sort`, `page`, and `limit`.
-- Supports multipart `FormData` for creating and updating books with binary cover image uploads.
+### 4.3 `LoanService`
+`getAll(status?)`, `getOverdue()`, `getMyLoans()`, `checkout({ bookId, memberId, days? })`, `renew(id, days?)`, `returnBook(id)`.
 
-### 4.4. `LoanService` (`core/services/loan.service.ts`)
-- Communicates with `/api/v1/loans`.
-- Handles member queries (`/api/v1/loans/my`) and librarian transactions (`/api/v1/loans`, `/api/v1/loans/overdue`).
-- Provides methods for checkout, renewal (`/:id/renew`), and return processing (`/:id/return`).
+### 4.4 `ReservationService`
+`getMy()`, `create(bookId)`, `getAll(status?)`, `markReady(id)`, **`fulfill(id)`** (checks a `ready` reservation out as a loan — `PATCH /:id/fulfill`), `cancel(id)`.
 
-### 4.5. `ReservationService` (`core/services/reservation.service.ts`)
-- Communicates with `/api/v1/reservations`.
-- Handles reservation creation (`POST /`), member retrieval (`/my`), cancellation (`DELETE /:id`), and fulfillment transitions (`PATCH /:id/ready`).
+### 4.5 `UserService`
+Self: `getMe`, `updateMe({ name?, email? })`, `updateMyPassword`, `updateMyPicture(FormData)`, `deactivateMe`.
+Admin: `getAll(role?)`, `getById`, `updateStatus(id, isActive: boolean)`, `updateRole(id, role)`, `deleteUser(id)`.
 
-### 4.6. `UserService` (`core/services/user.service.ts`)
-- Handles self-profile operations: `getMe()`, `updateMe()`, `updateMyPassword()`, `updateMyPicture()` (multipart `FormData`), and `deactivateMe()`.
-- Handles administrative controls: `getAllUsers()`, `updateUserStatus(id, status)`, `updateUserRole(id, role)`, and `deleteUser(id)`.
-
-### 4.7. `ToastService` (`shared/components/toast/toast.service.ts`)
-- Reactive subject emitting notification objects (`success`, `error`, `info`) with auto-dismiss timers (3500ms) and manual close triggers.
+### 4.6 `ToastService`
+In-app toast queue (success/error/info), replaces `window.alert`.
 
 ---
 
 ## 5. Routing & Access Control
 
-Route definitions are declared in `src/app/app.routes.ts`:
+Declared in `app.routes.ts`. Guards are plain `CanActivateFn`s, not classes.
 
-| Route Path | Component | Guard(s) | Allowed Roles | Description |
-|---|---|---|---|---|
-| `/books` | `BookListComponent` | *None* | Public | Book catalog browsing with search and category filters |
-| `/books/:id` | `BookDetailsComponent` | *None* | Public / Member | Book detail view with reservation trigger |
-| `/auth/login` | `LoginComponent` | *None* | Guest | Email and password login |
-| `/auth/register` | `RegisterComponent` | *None* | Guest | New member registration |
-| `/member/loans` | `MyLoansComponent` | `authGuard` | Authenticated | Member's personal active loans and history |
-| `/member/reservations` | `MyReservationsComponent` | `authGuard` | Authenticated | Member's reservations queue and cancellation |
-| `/profile` | `ProfileComponent` | `authGuard` | Authenticated | Profile info, password update, avatar upload, account deactivation |
-| `/librarian/books` | `LibrarianDashboardComponent` | `authGuard`, `roleGuard` | `librarian`, `admin` | Catalog management dashboard |
-| `/librarian/books/new` | `BookFormComponent` | `authGuard`, `roleGuard` | `librarian`, `admin` | Add new book to catalog |
-| `/librarian/books/:id/edit` | `BookFormComponent` | `authGuard`, `roleGuard` | `librarian`, `admin` | Edit existing catalog book details and cover |
-| `/librarian/loans` | `LoansManagementComponent` | `authGuard`, `roleGuard` | `librarian`, `admin` | Process checkouts, extensions, and returns |
-| `/librarian/reservations` | `ReservationsManagementComponent` | `authGuard`, `roleGuard` | `librarian`, `admin` | Manage and fulfill member reservations |
-| `/admin` | `AdminDashboardComponent` | `authGuard`, `roleGuard` | `admin` | User management and system report metrics |
-| `**` | *Redirect to `/books`* | *None* | All | Fallback route |
+| Path | Component | Guard | Notes |
+|---|---|---|---|
+| `''` | `BookListComponent` | — | Public catalog, root path |
+| `books/:id` | `BookDetailsComponent` | — | Public detail view |
+| `login` | `LoginComponent` | — | |
+| `register` | `RegisterComponent` | — | |
+| `my-loans` | `MyLoansComponent` | `authGuard` | Any authenticated role |
+| `my-reservations` | `MyReservationsComponent` | `authGuard` | Any authenticated role |
+| `profile` | `ProfileComponent` | `authGuard` | Any authenticated role |
+| `librarian/books` | `LibrarianDashboardComponent` | `roleGuard(['librarian','admin'])` | |
+| `librarian/books/new` | `BookFormComponent` | `roleGuard(['librarian','admin'])` | |
+| `librarian/books/:id/edit` | `BookFormComponent` | `roleGuard(['librarian','admin'])` | |
+| `librarian/loans` | `LoansManagementComponent` | `roleGuard(['librarian','admin'])` | |
+| `librarian/reservations` | `ReservationsManagementComponent` | `roleGuard(['librarian','admin'])` | |
+| `admin` | `AdminDashboardComponent` | `roleGuard(['admin'])` | |
+| `**` | redirect to `''` | — | Fallback |
 
----
-
-## 6. Design System & UI Principles
-
-- **Color Palette**:
-  - Primary Green: `#0F766E` (Deep Teal / Emerald)
-  - Primary Hover: `#115E59`
-  - Accent / Gold: `#D97706` / `#B45309`
-  - Neutral Background: `#F8FAFC`
-  - Cards & Containers: Pure White `#FFFFFF` with refined 1px borders (`#E2E8F0`)
-  - Text: Slate `#0F172A` (headings), `#334155` (body), `#64748B` (muted labels)
-- **Typography**:
-  - Headings: `Fraunces`, serif
-  - Body & UI: `Inter`, sans-serif
-- **Form Controls & Modals**:
-  - Inputs feature distinct focus rings, clear error labels, and responsive layout scaling.
-  - Native browser popups (`alert`, `confirm`) are completely avoided in favor of accessible, keyboard-trapped modal dialogs.
-- **Image Fallbacks**:
-  - Failed book covers load an embedded SVG placeholder (`book-placeholder.svg`).
-  - Missing user avatars fall back to initials or a neutral SVG silhouette.
+`roleGuard` checks authentication itself (redirects to `/login` if not logged in, to `/` if logged in but wrong role) — it isn't paired with `authGuard` in the route config.
 
 ---
 
-## 7. Build & Execution Instructions
+## 6. Reservation → Loan Flow (as of the latest fix)
 
-From the project root:
+`pending` (member reserves) → librarian **Mark Ready** → librarian **Check Out** (calls `reservationService.fulfill(id)`) → a Loan is created and the reservation becomes `fulfilled`, showing up immediately in the member's My Loans. Cancel is available at `pending` or `ready`, and is blocked once a reservation is `fulfilled` or already `cancelled`.
+
+---
+
+## 7. Design Tokens
+
+Defined once in `styles.css` `:root` and reused everywhere via `var(--token-name)`:
+
+- Primary: `#0F766E` (teal) / hover `#0B5E57`
+- Accent: `#D97706` (amber) / hover `#B45309`
+- Background: `#F8FAFC`, surfaces `#FFFFFF`, border `#E2E8F0`
+- Text: `#0F172A` (headings) / `#475569` (muted) / `#94A3B8` (faint)
+
+This is a light theme, not dark mode.
+
+---
+
+## 8. Build & Run
 
 ```bash
-# Build the Angular application for production
-npm run build:frontend
-
-# Or directly from the Frontend workspace
 cd Frontend
 npm install
-npm run build
+npm start        # ng serve, proxies /api/v1 to localhost:5000
+npm run build    # production bundle
 ```
 
-The production output is generated into `Frontend/dist/libhub-frontend-v21/browser` and is automatically served statically by the backend server when running in production mode.
+Production output lands in `Frontend/dist/libhub-frontend/browser` (the Angular project identifier in `angular.json` is `libhub-frontend`).
