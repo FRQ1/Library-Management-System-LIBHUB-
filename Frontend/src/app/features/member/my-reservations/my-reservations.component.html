@@ -4,16 +4,16 @@
     <p class="mb-0">Books you've put on hold.</p>
   </div>
 
-  @if (loading) {
+  @if (loading()) {
     <div class="spinner"></div>
-  } @else if (reservations.length === 0) {
+  } @else if (reservations().length === 0) {
     <div class="empty-state card">
       <app-icon name="bookmark" [size]="36"></app-icon>
       <p>You haven't reserved any books. <a routerLink="/">Browse the catalog</a> to find something.</p>
     </div>
   } @else {
     <div class="reservation-cards">
-      @for (res of reservations; track res._id; let i = $index) {
+      @for (res of reservations(); track res._id; let i = $index) {
         <div class="card reservation-card animate-fade-in-up" [style.animation-delay]="(i * 60) + 'ms'">
           <div class="reservation-cover">
             @if (asBook(res.book)?.coverImage) {
@@ -47,13 +47,14 @@
 </div>
 
 <app-confirm-modal
-  [isOpen]="showCancelModal"
+  [isOpen]="showCancelModal()"
   title="Cancel Reservation"
-  [message]="'Are you sure you want to cancel your reservation for &quot;' + (asBook(reservationToCancel?.book)?.title || 'this book') + '&quot;?'"
+  [message]="'Are you sure you want to cancel your reservation for &quot;' + (asBook(reservationToCancel()?.book)?.title || 'this book') + '&quot;?'"
   confirmText="Cancel Reservation"
   cancelText="Keep Reservation"
   [isDanger]="true"
   (confirmed)="confirmCancel()"
   (cancelled)="dismissCancelModal()"
 ></app-confirm-modal>
+
 

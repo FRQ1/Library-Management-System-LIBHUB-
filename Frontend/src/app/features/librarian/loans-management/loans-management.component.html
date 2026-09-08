@@ -10,24 +10,24 @@
       <div class="flex gap-sm">
         <button class="btn btn-secondary" (click)="toggleOverdue()">
           <app-icon name="clock" [size]="15"></app-icon>
-          {{ overdueOnly ? 'Show all loans' : 'Show overdue only' }}
+          {{ overdueOnly() ? 'Show all loans' : 'Show overdue only' }}
         </button>
-        <button class="btn btn-primary" (click)="showCheckoutForm = !showCheckoutForm">
-          <app-icon [name]="showCheckoutForm ? 'x' : 'plus'" [size]="15"></app-icon>
-          {{ showCheckoutForm ? 'Cancel' : 'Check Out' }}
+        <button class="btn btn-primary" (click)="toggleCheckoutForm()">
+          <app-icon [name]="showCheckoutForm() ? 'x' : 'plus'" [size]="15"></app-icon>
+          {{ showCheckoutForm() ? 'Cancel' : 'Check Out' }}
         </button>
       </div>
     </div>
 
-    @if (showCheckoutForm) {
+    @if (showCheckoutForm()) {
       <form class="card checkout-form mb-1" (ngSubmit)="submitCheckout()">
         <h3>Check out a book</h3>
         <p class="hint">Find the Book ID from the Books tab (or catalog URL) and the Member ID from the Admin &gt; Users tab.</p>
 
-        @if (checkoutError) {
+        @if (checkoutError()) {
           <div class="alert alert-danger">
             <app-icon name="alert-circle" [size]="16"></app-icon>
-            {{ checkoutError }}
+            {{ checkoutError() }}
           </div>
         }
 
@@ -47,16 +47,16 @@
           <input type="number" min="1" class="form-control copies-input" [(ngModel)]="checkoutDays" name="days" />
         </div>
 
-        <button type="submit" class="btn btn-primary" [disabled]="checkoutLoading">
+        <button type="submit" class="btn btn-primary" [disabled]="checkoutLoading()">
           <app-icon name="check" [size]="15"></app-icon>
-          {{ checkoutLoading ? 'Checking out...' : 'Confirm Checkout' }}
+          {{ checkoutLoading() ? 'Checking out...' : 'Confirm Checkout' }}
         </button>
       </form>
     }
 
-    @if (loading) {
+    @if (loading()) {
       <div class="spinner"></div>
-    } @else if (loans.length === 0) {
+    } @else if (loans().length === 0) {
       <div class="empty-state">
         <app-icon name="refresh-cw" [size]="36"></app-icon>
         <p>No loans to show.</p>
@@ -74,7 +74,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (loan of loans; track loan._id; let i = $index) {
+            @for (loan of loans(); track loan._id; let i = $index) {
               <tr [style.animation-delay]="(i * 40) + 'ms'">
                 <td>{{ asUser(loan.member)?.name || 'Unknown' }}</td>
                 <td>{{ asBook(loan.book)?.title || 'Unknown' }}</td>
@@ -110,13 +110,14 @@
 </div>
 
 <app-confirm-modal
-  [isOpen]="showReturnModal"
+  [isOpen]="showReturnModal()"
   title="Process Return"
-  [message]="'Confirm return for &quot;' + (asBook(loanToReturn?.book)?.title || 'this book') + '&quot; borrowed by ' + (asUser(loanToReturn?.member)?.name || 'member') + '?'"
+  [message]="'Confirm return for &quot;' + (asBook(loanToReturn()?.book)?.title || 'this book') + '&quot; borrowed by ' + (asUser(loanToReturn()?.member)?.name || 'member') + '?'"
   confirmText="Mark as Returned"
   cancelText="Cancel"
   [isDanger]="false"
   (confirmed)="confirmReturn()"
   (cancelled)="cancelReturn()"
 ></app-confirm-modal>
+
 

@@ -7,9 +7,9 @@
       <p class="mb-0">Manage member holds and pickups.</p>
     </div>
 
-    @if (loading) {
+    @if (loading()) {
       <div class="spinner"></div>
-    } @else if (reservations.length === 0) {
+    } @else if (reservations().length === 0) {
       <div class="empty-state">
         <app-icon name="bookmark" [size]="36"></app-icon>
         <p>No reservations to show.</p>
@@ -27,7 +27,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (res of reservations; track res._id; let i = $index) {
+            @for (res of reservations(); track res._id; let i = $index) {
               <tr [style.animation-delay]="(i * 40) + 'ms'">
                 <td>{{ asUser(res.member)?.name || 'Unknown' }}</td>
                 <td>{{ asBook(res.book)?.title || 'Unknown' }}</td>
@@ -62,13 +62,14 @@
 </div>
 
 <app-confirm-modal
-  [isOpen]="showCancelModal"
+  [isOpen]="showCancelModal()"
   title="Cancel Reservation"
-  [message]="'Cancel reservation of &quot;' + (asBook(reservationToCancel?.book)?.title || 'this book') + '&quot; for ' + (asUser(reservationToCancel?.member)?.name || 'member') + '?'"
+  [message]="'Cancel reservation of &quot;' + (asBook(reservationToCancel()?.book)?.title || 'this book') + '&quot; for ' + (asUser(reservationToCancel()?.member)?.name || 'member') + '?'"
   confirmText="Cancel Reservation"
   cancelText="Keep Reservation"
   [isDanger]="true"
   (confirmed)="confirmCancel()"
   (cancelled)="dismissCancelModal()"
 ></app-confirm-modal>
+
 

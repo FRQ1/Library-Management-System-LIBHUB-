@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BookService } from '../../../core/services/book.service';
@@ -25,16 +25,16 @@ export class BookDetailsComponent implements OnInit {
   private toast = inject(ToastService);
   public auth = inject(AuthService);
 
-  book: Book | null = null;
-  loading = true;
-  errorMessage = '';
+  book = signal<Book | null>(null);
+  loading = signal<boolean>(true);
+  errorMessage = signal<string>('');
 
-  reserving = false;
-  reserveMessage = '';
-  reserveError = false;
+  reserving = signal<boolean>(false);
+  reserveMessage = signal<string>('');
+  reserveError = signal<boolean>(false);
 
   // Confirm delete modal state
-  showDeleteModal = false;
+  showDeleteModal = signal<boolean>(false);
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -42,50 +42,52 @@ export class BookDetailsComponent implements OnInit {
 
     this.bookService.getById(id).subscribe({
       next: (res) => {
-        this.book = res.data.book;
-        this.loading = false;
+        this.book.set(res.data.book);
+        this.loading.set(false);
       },
       error: () => {
-        this.errorMessage = 'Book not found.';
-        this.loading = false;
+        this.errorMessage.set('Book not found.');
+        this.loading.set(false);
       },
     });
   }
 
   reserve(): void {
-    if (!this.book) return;
-    this.reserving = true;
-    this.reserveMessage = '';
+    const currentBook = this.book();
+    if (!currentBook) return;
+    this.reserving.set(true);
+    this.reserveMessage.set('');
 
-    this.reservationService.create(this.book._id).subscribe({
+    this.reservationService.create(currentBook._id).subscribe({
       next: () => {
-        this.reserving = false;
-        this.reserveError = false;
-        this.reserveMessage = 'Book reserved! Check "My Reservations" for updates.';
+        this.reserving.set(false);
+        this.reserveError.set(false);
+        this.reserveMessage.set('Book reserved! Check "My Reservations" for updates.');
         this.toast.success('Book reserved successfully!');
       },
       error: (err) => {
-        this.reserving = false;
-        this.reserveError = true;
-        this.reserveMessage = err.error?.message || 'Could not reserve this book.';
-        this.toast.error(this.reserveMessage);
+        this.reserving.set(false);
+        this.reserveError.set(true);
+        this.reserveMessage.set(err.error?.message || 'Could not reserve this book.');
+        this.toast.error(this.reserveMessage());
       },
     });
   }
 
   promptDeleteBook(): void {
-    this.showDeleteModal = true;
+    this.showDeleteModal.set(true);
   }
 
   cancelDelete(): void {
-    this.showDeleteModal = false;
+    this.showDeleteModal.set(false);
   }
 
   confirmDeleteBook(): void {
-    if (!this.book) return;
-    this.showDeleteModal = false;
+    const currentBook = this.book();
+    if (!currentBook) return;
+    this.showDeleteModal.set(false);
 
-    this.bookService.delete(this.book._id).subscribe({
+    this.bookService.delete(currentBook._id).subscribe({
       next: () => {
         this.toast.success('Book deleted from catalog.');
         this.router.navigate(['/librarian/books']);
@@ -96,4 +98,6 @@ export class BookDetailsComponent implements OnInit {
     });
   }
 }
+
+
 

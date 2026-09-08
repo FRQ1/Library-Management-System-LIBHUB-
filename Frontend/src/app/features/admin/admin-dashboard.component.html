@@ -8,46 +8,46 @@
     </div>
 
     <div class="tabs mb-1">
-      <button class="tab" [class.tab-active]="activeTab === 'users'" (click)="setTab('users')">
+      <button class="tab" [class.tab-active]="activeTab() === 'users'" (click)="setTab('users')">
         <app-icon name="user" [size]="15"></app-icon> Users
       </button>
-      <button class="tab" [class.tab-active]="activeTab === 'librarians'" (click)="setTab('librarians')">
+      <button class="tab" [class.tab-active]="activeTab() === 'librarians'" (click)="setTab('librarians')">
         <app-icon name="shield-check" [size]="15"></app-icon> Librarians
       </button>
-      <button class="tab" [class.tab-active]="activeTab === 'reports'" (click)="setTab('reports')">
+      <button class="tab" [class.tab-active]="activeTab() === 'reports'" (click)="setTab('reports')">
         <app-icon name="bar-chart" [size]="15"></app-icon> Reports
       </button>
     </div>
 
-    @if (activeTab === 'reports') {
-      @if (loadingReports) {
+    @if (activeTab() === 'reports') {
+      @if (loadingReports()) {
         <div class="spinner"></div>
       } @else {
         <div class="metric-cards">
           <div class="card metric-card animate-fade-in-up" style="animation-delay: 50ms;">
             <div class="metric-icon"><app-icon name="book-open" [size]="20"></app-icon></div>
-            <span class="metric-value">{{ reports.totalBooks }}</span>
+            <span class="metric-value">{{ reports().totalBooks }}</span>
             <span class="metric-label">Total Books</span>
           </div>
           <div class="card metric-card animate-fade-in-up" style="animation-delay: 100ms;">
             <div class="metric-icon"><app-icon name="refresh-cw" [size]="20"></app-icon></div>
-            <span class="metric-value">{{ reports.activeLoans }}</span>
+            <span class="metric-value">{{ reports().activeLoans }}</span>
             <span class="metric-label">Active Loans</span>
           </div>
           <div class="card metric-card animate-fade-in-up" style="animation-delay: 150ms;">
             <div class="metric-icon metric-icon-danger"><app-icon name="clock" [size]="20"></app-icon></div>
-            <span class="metric-value">{{ reports.overdueLoans }}</span>
+            <span class="metric-value">{{ reports().overdueLoans }}</span>
             <span class="metric-label">Overdue Books</span>
           </div>
           <div class="card metric-card animate-fade-in-up" style="animation-delay: 200ms;">
             <div class="metric-icon"><app-icon name="user-circle" [size]="20"></app-icon></div>
-            <span class="metric-value">{{ reports.activeUsers }}</span>
+            <span class="metric-value">{{ reports().activeUsers }}</span>
             <span class="metric-label">Active Users</span>
           </div>
         </div>
       }
     } @else {
-      @if (loadingUsers) {
+      @if (loadingUsers()) {
         <div class="spinner"></div>
       } @else {
         <div class="table-wrap animate-fade-in-up">
@@ -62,7 +62,7 @@
               </tr>
             </thead>
             <tbody>
-              @for (user of (activeTab === 'librarians' ? librarians : users); track getUserId(user); let i = $index) {
+              @for (user of (activeTab() === 'librarians' ? librarians() : users()); track getUserId(user); let i = $index) {
                 <tr [style.animation-delay]="(i * 40) + 'ms'">
                   <td>{{ user.name }}</td>
                   <td>{{ user.email }}</td>
@@ -101,13 +101,14 @@
 </div>
 
 <app-confirm-modal
-  [isOpen]="showDeleteModal"
+  [isOpen]="showDeleteModal()"
   title="Delete User"
-  [message]="'Are you sure you want to delete user ' + (userToDelete?.name || '') + '? This cannot be undone.'"
+  [message]="'Are you sure you want to delete user ' + (userToDelete()?.name || '') + '? This cannot be undone.'"
   confirmText="Delete User"
   cancelText="Cancel"
   [isDanger]="true"
   (confirmed)="confirmDeleteUser()"
   (cancelled)="cancelDelete()"
 ></app-confirm-modal>
+
 

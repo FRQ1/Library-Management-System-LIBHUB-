@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SidebarComponent, SidebarLink } from '../../../shared/components/sidebar/sidebar.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
@@ -24,12 +24,12 @@ export class ReservationsManagementComponent implements OnInit {
 
   sidebarLinks: SidebarLink[] = this.navigationService.getStaffSidebarLinks();
 
-  reservations: Reservation[] = [];
-  loading = true;
+  reservations = signal<Reservation[]>([]);
+  loading = signal<boolean>(true);
 
   // Confirm cancel modal state
-  showCancelModal = false;
-  reservationToCancel: Reservation | null = null;
+  showCancelModal = signal<boolean>(false);
+  reservationToCancel = signal<Reservation | null>(null);
 
   ngOnInit(): void {
     this.fetchReservations();
@@ -44,14 +44,14 @@ export class ReservationsManagementComponent implements OnInit {
   }
 
   fetchReservations(): void {
-    this.loading = true;
+    this.loading.set(true);
     this.reservationService.getAll().subscribe({
       next: (res) => {
-        this.reservations = res.data.reservations;
-        this.loading = false;
+        this.reservations.set(res.data.reservations);
+        this.loading.set(false);
       },
       error: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.toast.error('Could not load reservations.');
       },
     });
@@ -68,31 +68,32 @@ export class ReservationsManagementComponent implements OnInit {
   }
 
   promptCancel(reservation: Reservation): void {
-    this.reservationToCancel = reservation;
-    this.showCancelModal = true;
+    this.reservationToCancel.set(reservation);
+    this.showCancelModal.set(true);
   }
 
   dismissCancelModal(): void {
-    this.showCancelModal = false;
-    this.reservationToCancel = null;
+    this.showCancelModal.set(false);
+    this.reservationToCancel.set(null);
   }
 
   confirmCancel(): void {
-    if (!this.reservationToCancel) return;
-    const res = this.reservationToCancel;
-    this.showCancelModal = false;
+    const res = this.reservationToCancel();
+    if (!res) return;
+    this.showCancelModal.set(false);
 
     this.reservationService.cancel(res._id).subscribe({
       next: () => {
         this.toast.success('Reservation cancelled.');
-        this.reservationToCancel = null;
+        this.reservationToCancel.set(null);
         this.fetchReservations();
       },
       error: (err) => {
         this.toast.error(err.error?.message || 'Could not cancel this reservation.');
-        this.reservationToCancel = null;
+        this.reservationToCancel.set(null);
       },
     });
   }
 }
+
 

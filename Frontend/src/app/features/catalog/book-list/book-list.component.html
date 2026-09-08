@@ -69,7 +69,7 @@
       </div>
 
       <!-- Right Column: Featured Books Spotlight -->
-      @if (featuredBooks.length > 0) {
+      @if (featuredBooks().length > 0) {
         <div class="hero-spotlight animate-fade-in-up" style="animation-delay: 150ms;">
           <div class="spotlight-card">
             <div class="spotlight-header">
@@ -81,7 +81,7 @@
             </div>
 
             <div class="spotlight-books-row">
-              @for (feat of featuredBooks; track feat._id; let idx = $index) {
+              @for (feat of featuredBooks(); track feat._id; let idx = $index) {
                 <a [routerLink]="['/books', feat._id]" class="spotlight-book-item" [title]="feat.title">
                   <div class="spotlight-cover-wrap">
                     <img
@@ -116,9 +116,9 @@
     <div class="catalog-title-group">
       <h2 class="catalog-heading">Browse Books</h2>
       <p class="catalog-subheading">
-        Showing {{ books.length }} {{ books.length === 1 ? 'title' : 'titles' }}
-        @if (activeCategory) {
-          in <span class="active-cat-name">{{ activeCategory }}</span>
+        Showing {{ books().length }} {{ books().length === 1 ? 'title' : 'titles' }}
+        @if (activeCategory()) {
+          in <span class="active-cat-name">{{ activeCategory() }}</span>
         }
       </p>
     </div>
@@ -130,7 +130,7 @@
           <button
             type="button"
             class="category-chip"
-            [class.active]="activeCategory === cat.value"
+            [class.active]="activeCategory() === cat.value"
             (click)="selectCategory(cat.value)"
           >
             @if (cat.value === '') {
@@ -152,35 +152,35 @@
   </div>
 
   <!-- Loading State -->
-  @if (loading) {
+  @if (loading()) {
     <div class="loading-container">
       <div class="spinner"></div>
       <p class="loading-text">Loading catalog collection...</p>
     </div>
-  } @else if (errorMessage) {
+  } @else if (errorMessage()) {
     <div class="alert alert-danger animate-fade-in">
       <app-icon name="alert-circle" [size]="20"></app-icon>
       <div class="alert-content">
         <strong>Error loading catalog</strong>
-        <p>{{ errorMessage }}</p>
+        <p>{{ errorMessage() }}</p>
       </div>
       <button class="btn btn-sm btn-secondary" (click)="fetchBooks()">Try Again</button>
     </div>
-  } @else if (books.length === 0) {
+  } @else if (books().length === 0) {
     <div class="empty-catalog animate-fade-in">
       <div class="empty-icon-circle">
         <app-icon name="book-open" [size]="40"></app-icon>
       </div>
       <h3>No books found</h3>
-      <p>We couldn't find any books matching "{{ searchTerm || activeCategory }}". Try searching for another keyword or selecting a different genre.</p>
-      <button class="btn btn-secondary mt-1" (click)="searchTerm = ''; activeCategory = ''; fetchBooks()">
+      <p>We couldn't find any books matching "{{ searchTerm || activeCategory() }}". Try searching for another keyword or selecting a different genre.</p>
+      <button class="btn btn-secondary mt-1" (click)="searchTerm = ''; activeCategory.set(''); fetchBooks()">
         Reset Filters
       </button>
     </div>
   } @else {
     <!-- Books Grid -->
     <div class="books-grid">
-      @for (book of books; track book._id; let i = $index) {
+      @for (book of books(); track book._id; let i = $index) {
         <article class="book-card animate-fade-in-up" [style.animation-delay]="(i * 45) + 'ms'">
           <a [routerLink]="['/books', book._id]" class="book-card-link">
             <!-- 2:3 Realistic Book Cover Frame -->

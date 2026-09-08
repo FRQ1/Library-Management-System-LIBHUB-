@@ -1,6 +1,6 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserService } from '../../core/services/user.service';
 import { AuthService } from '../../core/services/auth.service';
 import { IconComponent } from '../../shared/components/icon/icon.component';
@@ -17,39 +17,38 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
   styleUrl: './profile.component.css',
 })
 export class ProfileComponent implements OnInit {
-  private fb = inject(FormBuilder);
   private userService = inject(UserService);
   private toast = inject(ToastService);
   public auth = inject(AuthService);
 
   // Deactivate account modal state
-  showDeactivateModal = false;
-  deactivating = false;
+  showDeactivateModal = signal<boolean>(false);
+  deactivating = signal<boolean>(false);
 
-  profileForm = this.fb.group({
-    name: ['', Validators.required],
-    email: ['', [Validators.required, Validators.email]],
+  profileForm = new FormGroup({
+    name: new FormControl('', [Validators.required]),
+    email: new FormControl('', [Validators.required, Validators.email]),
   });
 
-  passwordForm = this.fb.group({
-    currentPassword: ['', Validators.required],
-    newPassword: ['', [Validators.required, Validators.minLength(8)]],
+  passwordForm = new FormGroup({
+    currentPassword: new FormControl('', [Validators.required]),
+    newPassword: new FormControl('', [Validators.required, Validators.minLength(8)]),
   });
 
   selectedFile: File | null = null;
-  previewUrl: string | null = null;
+  previewUrl = signal<string | null>(null);
 
-  profileMessage = '';
-  profileError = false;
-  profileLoading = false;
+  profileMessage = signal<string>('');
+  profileError = signal<boolean>(false);
+  profileLoading = signal<boolean>(false);
 
-  passwordMessage = '';
-  passwordError = false;
-  passwordLoading = false;
+  passwordMessage = signal<string>('');
+  passwordError = signal<boolean>(false);
+  passwordLoading = signal<boolean>(false);
 
-  pictureLoading = false;
-  pictureMessage = '';
-  pictureError = false;
+  pictureLoading = signal<boolean>(false);
+  pictureMessage = signal<string>('');
+  pictureError = signal<boolean>(false);
 
   ngOnInit(): void {
     const user = this.auth.currentUser();
@@ -64,22 +63,25 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    this.profileLoading = true;
-    this.profileMessage = '';
+    this.profileLoading.set(true);
+    this.profileMessage.set('');
 
-    this.userService.updateMe(this.profileForm.getRawValue() as { name: string; email: string }).subscribe({
+    const name = this.profileForm.get('name')?.value || '';
+    const email = this.profileForm.get('email')?.value || '';
+
+    this.userService.updateMe({ name, email }).subscribe({
       next: (res) => {
-        this.profileLoading = false;
-        this.profileError = false;
-        this.profileMessage = 'Profile updated successfully.';
+        this.profileLoading.set(false);
+        this.profileError.set(false);
+        this.profileMessage.set('Profile updated successfully.');
         this.toast.success('Profile updated successfully.');
         this.auth.updateStoredUser(res.data.user);
       },
       error: (err) => {
-        this.profileLoading = false;
-        this.profileError = true;
-        this.profileMessage = err.error?.message || 'Could not update your profile.';
-        this.toast.error(this.profileMessage);
+        this.profileLoading.set(false);
+        this.profileError.set(true);
+        this.profileMessage.set(err.error?.message || 'Could not update your profile.');
+        this.toast.error(this.profileMessage());
       },
     });
   }
@@ -90,24 +92,27 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    this.passwordLoading = true;
-    this.passwordMessage = '';
+    this.passwordLoading.set(true);
+    this.passwordMessage.set('');
+
+    const currentPassword = this.passwordForm.get('currentPassword')?.value || '';
+    const newPassword = this.passwordForm.get('newPassword')?.value || '';
 
     this.userService
-      .updateMyPassword(this.passwordForm.getRawValue() as { currentPassword: string; newPassword: string })
+      .updateMyPassword({ currentPassword, newPassword })
       .subscribe({
         next: () => {
-          this.passwordLoading = false;
-          this.passwordError = false;
-          this.passwordMessage = 'Password changed successfully.';
+          this.passwordLoading.set(false);
+          this.passwordError.set(false);
+          this.passwordMessage.set('Password changed successfully.');
           this.toast.success('Password changed successfully.');
           this.passwordForm.reset();
         },
         error: (err) => {
-          this.passwordLoading = false;
-          this.passwordError = true;
-          this.passwordMessage = err.error?.message || 'Could not change your password.';
-          this.toast.error(this.passwordMessage);
+          this.passwordLoading.set(false);
+          this.passwordError.set(true);
+          this.passwordMessage.set(err.error?.message || 'Could not change your password.');
+          this.toast.error(this.passwordMessage());
         },
       });
   }
@@ -118,78 +123,79 @@ export class ProfileComponent implements OnInit {
 
     if (!file) {
       this.selectedFile = null;
-      this.previewUrl = null;
+      this.previewUrl.set(null);
       return;
     }
 
     const validation = validateProfilePictureFile(file);
     if (!validation.isValid) {
-      this.pictureError = true;
-      this.pictureMessage = validation.error || 'Invalid file.';
-      this.toast.error(this.pictureMessage);
+      this.pictureError.set(true);
+      this.pictureMessage.set(validation.error || 'Invalid file.');
+      this.toast.error(this.pictureMessage());
       input.value = '';
       return;
     }
 
-    this.pictureError = false;
-    this.pictureMessage = '';
+    this.pictureError.set(false);
+    this.pictureMessage.set('');
     this.selectedFile = file;
 
     const reader = new FileReader();
-    reader.onload = () => (this.previewUrl = reader.result as string);
+    reader.onload = () => this.previewUrl.set(reader.result as string);
     reader.readAsDataURL(this.selectedFile);
   }
 
   uploadPicture(): void {
     if (!this.selectedFile) return;
 
-    this.pictureLoading = true;
-    this.pictureMessage = '';
+    this.pictureLoading.set(true);
+    this.pictureMessage.set('');
 
     const formData = new FormData();
     formData.append('profilePicture', this.selectedFile);
 
     this.userService.updateMyPicture(formData).subscribe({
       next: (res) => {
-        this.pictureLoading = false;
-        this.pictureError = false;
-        this.pictureMessage = 'Profile picture updated.';
+        this.pictureLoading.set(false);
+        this.pictureError.set(false);
+        this.pictureMessage.set('Profile picture updated.');
         this.toast.success('Profile picture updated.');
         this.auth.updateStoredUser(res.data.user);
         this.selectedFile = null;
       },
       error: (err) => {
-        this.pictureLoading = false;
-        this.pictureError = true;
-        this.pictureMessage = err.error?.message || 'Could not upload your picture.';
-        this.toast.error(this.pictureMessage);
+        this.pictureLoading.set(false);
+        this.pictureError.set(true);
+        this.pictureMessage.set(err.error?.message || 'Could not upload your picture.');
+        this.toast.error(this.pictureMessage());
       },
     });
   }
 
   promptDeactivate(): void {
-    this.showDeactivateModal = true;
+    this.showDeactivateModal.set(true);
   }
 
   cancelDeactivate(): void {
-    this.showDeactivateModal = false;
+    this.showDeactivateModal.set(false);
   }
 
   confirmDeactivate(): void {
-    this.deactivating = true;
-    this.showDeactivateModal = false;
+    this.deactivating.set(true);
+    this.showDeactivateModal.set(false);
 
     this.userService.deactivateMe().subscribe({
       next: () => {
-        this.deactivating = false;
+        this.deactivating.set(false);
         this.toast.success('Your account has been deactivated.');
         this.auth.logout();
       },
       error: (err) => {
-        this.deactivating = false;
+        this.deactivating.set(false);
         this.toast.error(err.error?.message || 'Could not deactivate your account.');
       },
     });
   }
 }
+
 

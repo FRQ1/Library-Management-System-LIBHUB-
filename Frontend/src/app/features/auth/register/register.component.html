@@ -25,10 +25,10 @@
     </nav>
 
     <!-- Error Alert -->
-    @if (errorMessage) {
+    @if (errorMessage()) {
       <div class="alert alert-danger" role="alert" id="register-error-alert">
         <app-icon name="alert-circle" [size]="18"></app-icon>
-        <span>{{ errorMessage }}</span>
+        <span>{{ errorMessage() }}</span>
       </div>
     }
 
@@ -87,7 +87,7 @@
           </span>
           <input
             id="register-password"
-            [type]="showPassword ? 'text' : 'password'"
+            [type]="showPassword() ? 'text' : 'password'"
             class="input-field"
             formControlName="password"
             placeholder="At least 8 characters"
@@ -98,10 +98,10 @@
             type="button"
             class="toggle-password"
             (click)="togglePasswordVisibility()"
-            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+            [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
             id="reg-password-toggle"
           >
-            <app-icon [name]="showPassword ? 'eye-off' : 'eye'" [size]="18"></app-icon>
+            <app-icon [name]="showPassword() ? 'eye-off' : 'eye'" [size]="18"></app-icon>
           </button>
         </div>
         @if (form.get('password')?.touched && form.get('password')?.invalid) {
@@ -118,7 +118,7 @@
           </span>
           <input
             id="register-confirm"
-            [type]="showConfirmPassword ? 'text' : 'password'"
+            [type]="showConfirmPassword() ? 'text' : 'password'"
             class="input-field"
             formControlName="confirmPassword"
             placeholder="Repeat your password"
@@ -129,10 +129,10 @@
             type="button"
             class="toggle-password"
             (click)="toggleConfirmPasswordVisibility()"
-            [attr.aria-label]="showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'"
+            [attr.aria-label]="showConfirmPassword() ? 'Hide confirm password' : 'Show confirm password'"
             id="reg-confirm-toggle"
           >
-            <app-icon [name]="showConfirmPassword ? 'eye-off' : 'eye'" [size]="18"></app-icon>
+            <app-icon [name]="showConfirmPassword() ? 'eye-off' : 'eye'" [size]="18"></app-icon>
           </button>
         </div>
         @if (form.get('confirmPassword')?.touched && form.errors?.['mismatch']) {
@@ -144,10 +144,10 @@
       <button
         type="submit"
         class="submit-btn"
-        [disabled]="loading"
+        [disabled]="loading()"
         id="register-submit-button"
       >
-        @if (loading) {
+        @if (loading()) {
           <span class="spinner"></span>
           <span>Creating account...</span>
         } @else {

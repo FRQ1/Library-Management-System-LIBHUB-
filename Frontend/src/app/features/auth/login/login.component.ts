@@ -1,6 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
@@ -13,22 +13,21 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
   styleUrl: './login.component.css',
 })
 export class LoginComponent {
-  private fb = inject(FormBuilder);
+  private auth = inject(AuthService);
+  private router = inject(Router);
 
-  form = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required]],
-    rememberMe: [true],
+  form = new FormGroup({
+    email: new FormControl('', [Validators.required, Validators.email]),
+    password: new FormControl('', [Validators.required]),
+    rememberMe: new FormControl(true),
   });
 
-  loading = false;
-  errorMessage = '';
-  showPassword = false;
-
-  constructor(private auth: AuthService, private router: Router) {}
+  loading = signal<boolean>(false);
+  errorMessage = signal<string>('');
+  showPassword = signal<boolean>(false);
 
   togglePasswordVisibility(): void {
-    this.showPassword = !this.showPassword;
+    this.showPassword.update((val) => !val);
   }
 
   submit(): void {
@@ -37,20 +36,22 @@ export class LoginComponent {
       return;
     }
 
-    this.loading = true;
-    this.errorMessage = '';
+    this.loading.set(true);
+    this.errorMessage.set('');
 
-    const { email, password } = this.form.getRawValue();
+    const email = this.form.get('email')?.value || '';
+    const password = this.form.get('password')?.value || '';
 
-    this.auth.login({ email: email!, password: password! }).subscribe({
+    this.auth.login({ email, password }).subscribe({
       next: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.router.navigate(['/']);
       },
       error: (err) => {
-        this.loading = false;
-        this.errorMessage = err.error?.message || 'Invalid email or password. Please check your credentials.';
+        this.loading.set(false);
+        this.errorMessage.set(err.error?.message || 'Invalid email or password. Please check your credentials.');
       },
     });
   }
 }
+

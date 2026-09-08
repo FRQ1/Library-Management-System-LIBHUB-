@@ -26,9 +26,9 @@
       <button type="submit" class="btn btn-secondary">Search</button>
     </form>
 
-    @if (loading) {
+    @if (loading()) {
       <div class="spinner"></div>
-    } @else if (books.length === 0) {
+    } @else if (books().length === 0) {
       <div class="empty-state">
         <app-icon name="book-open" [size]="36"></app-icon>
         <p>No books yet. Add your first book to the catalog.</p>
@@ -48,7 +48,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (book of books; track book._id; let i = $index) {
+            @for (book of books(); track book._id; let i = $index) {
               <tr [style.animation-delay]="(i * 40) + 'ms'">
                 <td>
                   <div class="thumb">
@@ -90,13 +90,14 @@
 </div>
 
 <app-confirm-modal
-  [isOpen]="showDeleteModal"
+  [isOpen]="showDeleteModal()"
   title="Delete Book"
-  [message]="'Are you sure you want to delete &quot;' + (bookToDelete?.title || '') + '&quot;? This cannot be undone.'"
+  [message]="'Are you sure you want to delete &quot;' + (bookToDelete()?.title || '') + '&quot;? This cannot be undone.'"
   confirmText="Delete Book"
   cancelText="Cancel"
   [isDanger]="true"
   (confirmed)="confirmDeleteBook()"
   (cancelled)="cancelDelete()"
 ></app-confirm-modal>
+
 

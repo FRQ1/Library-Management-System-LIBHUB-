@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { forkJoin } from 'rxjs';
 import { SidebarComponent, SidebarLink } from '../../shared/components/sidebar/sidebar.component';
@@ -29,23 +29,28 @@ export class AdminDashboardComponent implements OnInit {
 
   sidebarLinks: SidebarLink[] = this.navigationService.getStaffSidebarLinks();
 
-  activeTab: AdminTab = 'users';
+  activeTab = signal<AdminTab>('users');
 
-  users: User[] = [];
-  librarians: User[] = [];
-  loadingUsers = true;
+  users = signal<User[]>([]);
+  librarians = signal<User[]>([]);
+  loadingUsers = signal<boolean>(true);
 
-  reports = {
+  reports = signal<{
+    totalBooks: number;
+    activeLoans: number;
+    overdueLoans: number;
+    activeUsers: number;
+  }>({
     totalBooks: 0,
     activeLoans: 0,
     overdueLoans: 0,
     activeUsers: 0,
-  };
-  loadingReports = true;
+  });
+  loadingReports = signal<boolean>(true);
 
   // Confirmation modal state
-  showDeleteModal = false;
-  userToDelete: User | null = null;
+  showDeleteModal = signal<boolean>(false);
+  userToDelete = signal<User | null>(null);
 
   getUserId = getUserId;
 
@@ -55,26 +60,26 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   setTab(tab: AdminTab): void {
-    this.activeTab = tab;
+    this.activeTab.set(tab);
   }
 
   fetchUsers(): void {
-    this.loadingUsers = true;
+    this.loadingUsers.set(true);
     this.userService.getAll().subscribe({
       next: (res) => {
-        this.users = res.data.users;
-        this.librarians = res.data.users.filter((u) => u.role === 'librarian');
-        this.loadingUsers = false;
+        this.users.set(res.data.users);
+        this.librarians.set(res.data.users.filter((u) => u.role === 'librarian'));
+        this.loadingUsers.set(false);
       },
       error: () => {
-        this.loadingUsers = false;
+        this.loadingUsers.set(false);
         this.toast.error('Could not load users list.');
       },
     });
   }
 
   fetchReports(): void {
-    this.loadingReports = true;
+    this.loadingReports.set(true);
     forkJoin({
       books: this.bookService.getAll(),
       loans: this.loanService.getAll('active'),
@@ -82,16 +87,16 @@ export class AdminDashboardComponent implements OnInit {
       users: this.userService.getAll(),
     }).subscribe({
       next: ({ books, loans, overdue, users }) => {
-        this.reports = {
+        this.reports.set({
           totalBooks: books.count ?? books.data.books.length,
           activeLoans: loans.count ?? loans.data.loans.length,
           overdueLoans: overdue.count ?? overdue.data.loans.length,
           activeUsers: users.data.users.filter((u) => u.isActive).length,
-        };
-        this.loadingReports = false;
+        });
+        this.loadingReports.set(false);
       },
       error: () => {
-        this.loadingReports = false;
+        this.loadingReports.set(false);
         this.toast.error('Could not load system reports.');
       },
     });
@@ -125,34 +130,37 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   promptDeleteUser(user: User): void {
-    this.userToDelete = user;
-    this.showDeleteModal = true;
+    this.userToDelete.set(user);
+    this.showDeleteModal.set(true);
   }
 
   cancelDelete(): void {
-    this.showDeleteModal = false;
-    this.userToDelete = null;
+    this.showDeleteModal.set(false);
+    this.userToDelete.set(null);
   }
 
   confirmDeleteUser(): void {
-    if (!this.userToDelete) return;
-    const id = getUserId(this.userToDelete);
+    const user = this.userToDelete();
+    if (!user) return;
+    const id = getUserId(user);
     if (!id) return;
 
-    const targetName = this.userToDelete.name;
-    this.showDeleteModal = false;
+    const targetName = user.name;
+    this.showDeleteModal.set(false);
 
     this.userService.deleteUser(id).subscribe({
       next: () => {
         this.toast.success(`User "${targetName}" deleted.`);
         this.fetchUsers();
-        this.userToDelete = null;
+        this.userToDelete.set(null);
       },
       error: (err) => {
         this.toast.error(err.error?.message || 'Could not delete this user.');
-        this.userToDelete = null;
+        this.userToDelete.set(null);
       },
     });
   }
 }
+
+
 

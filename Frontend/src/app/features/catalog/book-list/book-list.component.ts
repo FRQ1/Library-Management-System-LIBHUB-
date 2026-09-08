@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -33,16 +33,14 @@ export class BookListComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   categories = CATEGORIES;
-  books: Book[] = [];
-  loading = true;
-  errorMessage = '';
+  books = signal<Book[]>([]);
+  loading = signal<boolean>(true);
+  errorMessage = signal<string>('');
 
   searchTerm = '';
-  activeCategory: BookCategory | '' = '';
+  activeCategory = signal<BookCategory | ''>('');
 
-  get featuredBooks(): Book[] {
-    return this.books.slice(0, 3);
-  }
+  featuredBooks = computed(() => this.books().slice(0, 3));
 
   onImageError(event: Event): void {
     const target = event.target as HTMLImageElement;
@@ -54,32 +52,32 @@ export class BookListComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       if (params['category'] !== undefined) {
-        this.activeCategory = (params['category'] || '') as BookCategory | '';
+        this.activeCategory.set((params['category'] || '') as BookCategory | '');
       }
       this.fetchBooks();
     });
   }
 
   fetchBooks(): void {
-    this.loading = true;
-    this.errorMessage = '';
+    this.loading.set(true);
+    this.errorMessage.set('');
 
     this.bookService
-      .getAll({ search: this.searchTerm || undefined, category: this.activeCategory || undefined })
+      .getAll({ search: this.searchTerm || undefined, category: this.activeCategory() || undefined })
       .subscribe({
         next: (res) => {
-          this.books = res.data.books;
-          this.loading = false;
+          this.books.set(res.data.books);
+          this.loading.set(false);
         },
         error: () => {
-          this.errorMessage = 'Could not load the catalog. Please try again.';
-          this.loading = false;
+          this.errorMessage.set('Could not load the catalog. Please try again.');
+          this.loading.set(false);
         },
       });
   }
 
   selectCategory(category: BookCategory | ''): void {
-    this.activeCategory = category;
+    this.activeCategory.set(category);
     this.fetchBooks();
   }
 
@@ -87,4 +85,5 @@ export class BookListComponent implements OnInit {
     this.fetchBooks();
   }
 }
+
 

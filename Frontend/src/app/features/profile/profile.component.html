@@ -6,8 +6,8 @@
 
   <div class="card mb-1 picture-card">
     <div class="avatar-preview">
-      @if (previewUrl) {
-        <img [src]="previewUrl" alt="Preview" />
+      @if (previewUrl()) {
+        <img [src]="previewUrl()" alt="Preview" />
       } @else if (auth.currentUser()?.profilePicture) {
         <img [src]="auth.currentUser()?.profilePicture | userAvatar" alt="Profile picture" />
       } @else {
@@ -19,10 +19,10 @@
       <h3 class="mb-0">Profile picture</h3>
       <p class="picture-hint">JPG, PNG or WEBP, up to 5MB</p>
 
-      @if (pictureMessage) {
-        <div class="alert" [class.alert-danger]="pictureError" [class.alert-success]="!pictureError">
-          <app-icon [name]="pictureError ? 'alert-circle' : 'check-circle'" [size]="16"></app-icon>
-          {{ pictureMessage }}
+      @if (pictureMessage()) {
+        <div class="alert" [class.alert-danger]="pictureError()" [class.alert-success]="!pictureError()">
+          <app-icon [name]="pictureError() ? 'alert-circle' : 'check-circle'" [size]="16"></app-icon>
+          {{ pictureMessage() }}
         </div>
       }
 
@@ -32,9 +32,9 @@
       </label>
       <input id="profilePicture" type="file" accept="image/jpeg,image/png,image/webp" class="visually-hidden" (change)="onFileSelected($event)" />
 
-      <button class="btn btn-primary btn-sm mt-1" [disabled]="!selectedFile || pictureLoading" (click)="uploadPicture()">
+      <button class="btn btn-primary btn-sm mt-1" [disabled]="!selectedFile || pictureLoading()" (click)="uploadPicture()">
         <app-icon name="check" [size]="14"></app-icon>
-        {{ pictureLoading ? 'Uploading...' : 'Upload picture' }}
+        {{ pictureLoading() ? 'Uploading...' : 'Upload picture' }}
       </button>
     </div>
   </div>
@@ -42,10 +42,10 @@
   <form class="card mb-1" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
     <h3>Profile details</h3>
 
-    @if (profileMessage) {
-      <div class="alert" [class.alert-danger]="profileError" [class.alert-success]="!profileError">
-        <app-icon [name]="profileError ? 'alert-circle' : 'check-circle'" [size]="16"></app-icon>
-        {{ profileMessage }}
+    @if (profileMessage()) {
+      <div class="alert" [class.alert-danger]="profileError()" [class.alert-success]="!profileError()">
+        <app-icon [name]="profileError() ? 'alert-circle' : 'check-circle'" [size]="16"></app-icon>
+        {{ profileMessage() }}
       </div>
     }
 
@@ -58,19 +58,19 @@
       <input id="email" type="email" class="form-control" formControlName="email" />
     </div>
 
-    <button type="submit" class="btn btn-primary" [disabled]="profileLoading">
+    <button type="submit" class="btn btn-primary" [disabled]="profileLoading()">
       <app-icon name="check" [size]="15"></app-icon>
-      {{ profileLoading ? 'Saving...' : 'Save changes' }}
+      {{ profileLoading() ? 'Saving...' : 'Save changes' }}
     </button>
   </form>
 
   <form class="card" [formGroup]="passwordForm" (ngSubmit)="changePassword()">
     <h3>Change password</h3>
 
-    @if (passwordMessage) {
-      <div class="alert" [class.alert-danger]="passwordError" [class.alert-success]="!passwordError">
-        <app-icon [name]="passwordError ? 'alert-circle' : 'check-circle'" [size]="16"></app-icon>
-        {{ passwordMessage }}
+    @if (passwordMessage()) {
+      <div class="alert" [class.alert-danger]="passwordError()" [class.alert-success]="!passwordError()">
+        <app-icon [name]="passwordError() ? 'alert-circle' : 'check-circle'" [size]="16"></app-icon>
+        {{ passwordMessage() }}
       </div>
     }
 
@@ -83,9 +83,9 @@
       <input id="newPassword" type="password" class="form-control" formControlName="newPassword" />
     </div>
 
-    <button type="submit" class="btn btn-primary" [disabled]="passwordLoading">
+    <button type="submit" class="btn btn-primary" [disabled]="passwordLoading()">
       <app-icon name="check" [size]="15"></app-icon>
-      {{ passwordLoading ? 'Changing...' : 'Change password' }}
+      {{ passwordLoading() ? 'Changing...' : 'Change password' }}
     </button>
   </form>
 
@@ -95,16 +95,16 @@
         <h3 class="danger-zone-title">Deactivate Account</h3>
         <p class="danger-zone-desc">Once deactivated, you will not be able to log in or borrow books. Please contact an administrator if you need your account restored.</p>
       </div>
-      <button type="button" class="btn btn-danger" [disabled]="deactivating" (click)="promptDeactivate()">
+      <button type="button" class="btn btn-danger" [disabled]="deactivating()" (click)="promptDeactivate()">
         <app-icon name="alert-circle" [size]="15"></app-icon>
-        {{ deactivating ? 'Deactivating...' : 'Deactivate account' }}
+        {{ deactivating() ? 'Deactivating...' : 'Deactivate account' }}
       </button>
     </div>
   </div>
 </div>
 
 <app-confirm-modal
-  [isOpen]="showDeactivateModal"
+  [isOpen]="showDeactivateModal()"
   title="Deactivate Account"
   message="Are you sure you want to deactivate your account? You will be logged out immediately."
   confirmText="Deactivate My Account"
@@ -113,3 +113,4 @@
   (confirmed)="confirmDeactivate()"
   (cancelled)="cancelDeactivate()"
 ></app-confirm-modal>
+

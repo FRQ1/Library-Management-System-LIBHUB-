@@ -4,17 +4,17 @@
     <p class="mb-0">Your current and past borrowed books.</p>
   </div>
 
-  @if (loading) {
+  @if (loading()) {
     <div class="spinner"></div>
   } @else {
-    @if (currentLoans.length === 0) {
+    @if (currentLoans().length === 0) {
       <div class="empty-state card">
         <app-icon name="book-open" [size]="36"></app-icon>
         <p>You don't have any active loans. <a routerLink="/">Browse the catalog</a> to borrow a book.</p>
       </div>
     } @else {
       <div class="loan-cards">
-        @for (loan of currentLoans; track loan._id; let i = $index) {
+        @for (loan of currentLoans(); track loan._id; let i = $index) {
           <div class="card loan-card animate-fade-in-up" [style.animation-delay]="(i * 60) + 'ms'">
             <div class="loan-card-cover">
               @if (asBook(loan.book)?.coverImage) {
@@ -40,7 +40,7 @@
       </div>
     }
 
-    @if (pastLoans.length > 0) {
+    @if (pastLoans().length > 0) {
       <h2 class="mt-2 mb-1">Borrowing history</h2>
       <div class="table-wrap">
         <table>
@@ -52,7 +52,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (loan of pastLoans; track loan._id; let i = $index) {
+            @for (loan of pastLoans(); track loan._id; let i = $index) {
               <tr [style.animation-delay]="(i * 40) + 'ms'">
                 <td>{{ asBook(loan.book)?.title || 'Unknown book' }}</td>
                 <td>{{ loan.borrowDate | date: 'mediumDate' }}</td>
@@ -65,3 +65,4 @@
     }
   }
 </div>
+

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent, SidebarLink } from '../../../shared/components/sidebar/sidebar.component';
@@ -25,20 +25,20 @@ export class LoansManagementComponent implements OnInit {
 
   sidebarLinks: SidebarLink[] = this.navigationService.getStaffSidebarLinks();
 
-  loans: Loan[] = [];
-  loading = true;
-  overdueOnly = false;
-  showCheckoutForm = false;
+  loans = signal<Loan[]>([]);
+  loading = signal<boolean>(true);
+  overdueOnly = signal<boolean>(false);
+  showCheckoutForm = signal<boolean>(false);
 
   checkoutBookId = '';
   checkoutMemberId = '';
   checkoutDays = 14;
-  checkoutError = '';
-  checkoutLoading = false;
+  checkoutError = signal<string>('');
+  checkoutLoading = signal<boolean>(false);
 
   // Confirm return modal state
-  showReturnModal = false;
-  loanToReturn: Loan | null = null;
+  showReturnModal = signal<boolean>(false);
+  loanToReturn = signal<Loan | null>(null);
 
   ngOnInit(): void {
     this.fetchLoans();
@@ -53,46 +53,50 @@ export class LoansManagementComponent implements OnInit {
   }
 
   fetchLoans(): void {
-    this.loading = true;
-    const request$ = this.overdueOnly ? this.loanService.getOverdue() : this.loanService.getAll();
+    this.loading.set(true);
+    const request$ = this.overdueOnly() ? this.loanService.getOverdue() : this.loanService.getAll();
 
     request$.subscribe({
       next: (res) => {
-        this.loans = res.data.loans;
-        this.loading = false;
+        this.loans.set(res.data.loans);
+        this.loading.set(false);
       },
       error: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.toast.error('Could not load loans list.');
       },
     });
   }
 
   toggleOverdue(): void {
-    this.overdueOnly = !this.overdueOnly;
+    this.overdueOnly.update((v) => !v);
     this.fetchLoans();
+  }
+
+  toggleCheckoutForm(): void {
+    this.showCheckoutForm.update((v) => !v);
   }
 
   submitCheckout(): void {
     if (!this.checkoutBookId || !this.checkoutMemberId) return;
 
-    this.checkoutLoading = true;
-    this.checkoutError = '';
+    this.checkoutLoading.set(true);
+    this.checkoutError.set('');
 
     this.loanService
       .checkout({ bookId: this.checkoutBookId, memberId: this.checkoutMemberId, days: this.checkoutDays })
       .subscribe({
         next: () => {
-          this.checkoutLoading = false;
-          this.showCheckoutForm = false;
+          this.checkoutLoading.set(false);
+          this.showCheckoutForm.set(false);
           this.checkoutBookId = '';
           this.checkoutMemberId = '';
           this.toast.success('Book checked out successfully.');
           this.fetchLoans();
         },
         error: (err) => {
-          this.checkoutLoading = false;
-          this.checkoutError = err.error?.message || 'Could not check out this book.';
+          this.checkoutLoading.set(false);
+          this.checkoutError.set(err.error?.message || 'Could not check out this book.');
         },
       });
   }
@@ -108,29 +112,29 @@ export class LoansManagementComponent implements OnInit {
   }
 
   promptReturn(loan: Loan): void {
-    this.loanToReturn = loan;
-    this.showReturnModal = true;
+    this.loanToReturn.set(loan);
+    this.showReturnModal.set(true);
   }
 
   cancelReturn(): void {
-    this.showReturnModal = false;
-    this.loanToReturn = null;
+    this.showReturnModal.set(false);
+    this.loanToReturn.set(null);
   }
 
   confirmReturn(): void {
-    if (!this.loanToReturn) return;
-    const loan = this.loanToReturn;
-    this.showReturnModal = false;
+    const loan = this.loanToReturn();
+    if (!loan) return;
+    this.showReturnModal.set(false);
 
     this.loanService.returnBook(loan._id).subscribe({
       next: () => {
         this.toast.success('Book marked as returned.');
-        this.loanToReturn = null;
+        this.loanToReturn.set(null);
         this.fetchLoans();
       },
       error: (err) => {
         this.toast.error(err.error?.message || 'Could not process this return.');
-        this.loanToReturn = null;
+        this.loanToReturn.set(null);
       },
     });
   }
@@ -139,4 +143,6 @@ export class LoansManagementComponent implements OnInit {
     return loan.status === 'active' && new Date(loan.dueDate) < new Date();
   }
 }
+
+
 

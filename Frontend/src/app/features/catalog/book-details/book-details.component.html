@@ -1,12 +1,12 @@
 <div class="container">
-  @if (loading) {
+  @if (loading()) {
     <div class="spinner"></div>
-  } @else if (errorMessage) {
+  } @else if (errorMessage()) {
     <div class="alert alert-danger">
       <app-icon name="alert-circle" [size]="18"></app-icon>
-      {{ errorMessage }}
+      {{ errorMessage() }}
     </div>
-  } @else if (book) {
+  } @else if (book(); as b) {
     <a routerLink="/" class="back-link">
       <app-icon name="arrow-left" [size]="15"></app-icon> Back to catalog
     </a>
@@ -15,53 +15,53 @@
       <div class="book-details-cover">
         <div class="book-spine-crease"></div>
         <img
-          [src]="book.coverImage | bookCover"
-          [alt]="book.title"
+          [src]="b.coverImage | bookCover"
+          [alt]="b.title"
           (error)="$any($event.target).src = '/assets/images/book-placeholder.svg'"
           class="book-details-img"
         />
       </div>
 
       <div class="book-details-info animate-fade-in-up" style="animation-delay: 80ms;">
-        <h1>{{ book.title }}</h1>
-        <p class="book-details-author">by {{ book.author }}</p>
+        <h1>{{ b.title }}</h1>
+        <p class="book-details-author">by {{ b.author }}</p>
 
         <div class="flex gap-sm mb-1">
-          @if (book.availableCopies > 0) {
+          @if (b.availableCopies > 0) {
             <span class="badge badge-success">
               <app-icon name="check-circle" [size]="12"></app-icon>
-              Available ({{ book.availableCopies }}/{{ book.totalCopies }})
+              Available ({{ b.availableCopies }}/{{ b.totalCopies }})
             </span>
           } @else {
             <span class="badge badge-danger">
               <app-icon name="clock" [size]="12"></app-icon> Checked out
             </span>
           }
-          <span class="badge badge-neutral">{{ book.category }}</span>
+          <span class="badge badge-neutral">{{ b.category }}</span>
         </div>
 
         <dl class="book-meta">
           <dt>ISBN</dt>
-          <dd>{{ book.isbn }}</dd>
+          <dd>{{ b.isbn }}</dd>
         </dl>
 
-        @if (book.description) {
+        @if (b.description) {
           <h3 class="mt-1">Description</h3>
-          <p>{{ book.description }}</p>
+          <p>{{ b.description }}</p>
         }
 
-        @if (reserveMessage) {
-          <div class="alert" [class.alert-danger]="reserveError" [class.alert-success]="!reserveError">
-            <app-icon [name]="reserveError ? 'alert-circle' : 'check-circle'" [size]="18"></app-icon>
-            {{ reserveMessage }}
+        @if (reserveMessage()) {
+          <div class="alert" [class.alert-danger]="reserveError()" [class.alert-success]="!reserveError()">
+            <app-icon [name]="reserveError() ? 'alert-circle' : 'check-circle'" [size]="18"></app-icon>
+            {{ reserveMessage() }}
           </div>
         }
 
         <div class="book-actions mt-1">
           @if (auth.role() === 'member') {
-            <button class="btn btn-primary" (click)="reserve()" [disabled]="reserving">
+            <button class="btn btn-primary" (click)="reserve()" [disabled]="reserving()">
               <app-icon name="bookmark" [size]="16"></app-icon>
-              {{ reserving ? 'Reserving...' : 'Reserve this book' }}
+              {{ reserving() ? 'Reserving...' : 'Reserve this book' }}
             </button>
           } @else if (!auth.isLoggedIn()) {
             <a routerLink="/login" class="btn btn-primary">
@@ -70,7 +70,7 @@
           }
 
           @if (auth.role() === 'librarian' || auth.role() === 'admin') {
-            <a [routerLink]="['/librarian/books', book._id, 'edit']" class="btn btn-secondary">
+            <a [routerLink]="['/librarian/books', b._id, 'edit']" class="btn btn-secondary">
               <app-icon name="pencil" [size]="15"></app-icon> Edit book
             </a>
             <button class="btn btn-danger" (click)="promptDeleteBook()">
@@ -87,13 +87,14 @@
 </div>
 
 <app-confirm-modal
-  [isOpen]="showDeleteModal"
+  [isOpen]="showDeleteModal()"
   title="Delete Book"
-  [message]="'Are you sure you want to delete &quot;' + (book?.title || 'this book') + '&quot;? This cannot be undone.'"
+  [message]="'Are you sure you want to delete &quot;' + (book()?.title || 'this book') + '&quot;? This cannot be undone.'"
   confirmText="Delete Book"
   cancelText="Cancel"
   [isDanger]="true"
   (confirmed)="confirmDeleteBook()"
   (cancelled)="cancelDelete()"
 ></app-confirm-modal>
+
 

@@ -4,13 +4,13 @@
   </a>
 
   <form class="card" [formGroup]="form" (ngSubmit)="submit()">
-    <h2>{{ isEditMode ? 'Edit Book' : 'Add New Book' }}</h2>
-    <p class="mb-1">{{ isEditMode ? 'Update this catalog entry.' : 'Add a new title to the LibHub catalog.' }}</p>
+    <h2>{{ isEditMode() ? 'Edit Book' : 'Add New Book' }}</h2>
+    <p class="mb-1">{{ isEditMode() ? 'Update this catalog entry.' : 'Add a new title to the LibHub catalog.' }}</p>
 
-    @if (errorMessage) {
+    @if (errorMessage()) {
       <div class="alert alert-danger">
         <app-icon name="alert-circle" [size]="18"></app-icon>
-        {{ errorMessage }}
+        {{ errorMessage() }}
       </div>
     }
 
@@ -53,10 +53,10 @@
     <div class="form-group">
       <label>Cover image</label>
       <label class="dropzone" for="coverImage">
-        @if (previewUrl) {
-          <img [src]="previewUrl" alt="Preview" class="dropzone-preview" />
-        } @else if (existingCoverImage) {
-          <img [src]="existingCoverImage | bookCover" alt="Current cover" class="dropzone-preview" />
+        @if (previewUrl()) {
+          <img [src]="previewUrl()" alt="Preview" class="dropzone-preview" />
+        } @else if (existingCoverImage()) {
+          <img [src]="existingCoverImage() | bookCover" alt="Current cover" class="dropzone-preview" />
         } @else {
           <app-icon name="image" [size]="26"></app-icon>
           <span>Click to upload a cover image</span>
@@ -68,10 +68,11 @@
 
     <div class="form-actions">
       <a routerLink="/librarian/books" class="btn btn-secondary">Cancel</a>
-      <button type="submit" class="btn btn-primary" [disabled]="loading">
+      <button type="submit" class="btn btn-primary" [disabled]="loading()">
         <app-icon name="check" [size]="16"></app-icon>
-        {{ loading ? 'Saving...' : 'Save Book' }}
+        {{ loading() ? 'Saving...' : 'Save Book' }}
       </button>
     </div>
   </form>
 </div>
+

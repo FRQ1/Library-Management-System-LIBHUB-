@@ -25,10 +25,10 @@
     </nav>
 
     <!-- Error Alert -->
-    @if (errorMessage) {
+    @if (errorMessage()) {
       <div class="alert alert-danger" role="alert" id="login-error-alert">
         <app-icon name="alert-circle" [size]="18"></app-icon>
-        <span>{{ errorMessage }}</span>
+        <span>{{ errorMessage() }}</span>
       </div>
     }
 
@@ -67,7 +67,7 @@
           </span>
           <input
             id="login-password"
-            [type]="showPassword ? 'text' : 'password'"
+            [type]="showPassword() ? 'text' : 'password'"
             class="input-field"
             formControlName="password"
             placeholder="••••••••"
@@ -78,10 +78,10 @@
             type="button"
             class="toggle-password"
             (click)="togglePasswordVisibility()"
-            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+            [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
             id="password-toggle-btn"
           >
-            <app-icon [name]="showPassword ? 'eye-off' : 'eye'" [size]="18"></app-icon>
+            <app-icon [name]="showPassword() ? 'eye-off' : 'eye'" [size]="18"></app-icon>
           </button>
         </div>
         @if (form.get('password')?.touched && form.get('password')?.invalid) {
@@ -101,10 +101,10 @@
       <button
         type="submit"
         class="submit-btn"
-        [disabled]="loading"
+        [disabled]="loading()"
         id="login-submit-button"
       >
-        @if (loading) {
+        @if (loading()) {
           <span class="spinner"></span>
           <span>Signing in...</span>
         } @else {

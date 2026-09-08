@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LoanService } from '../../../core/services/loan.service';
@@ -19,20 +19,20 @@ export class MyLoansComponent implements OnInit {
   private loanService = inject(LoanService);
   private toast = inject(ToastService);
 
-  currentLoans: Loan[] = [];
-  pastLoans: Loan[] = [];
-  loading = true;
+  currentLoans = signal<Loan[]>([]);
+  pastLoans = signal<Loan[]>([]);
+  loading = signal<boolean>(true);
 
   ngOnInit(): void {
     this.loanService.getMyLoans().subscribe({
       next: (res) => {
         const loans = res.data.loans;
-        this.currentLoans = loans.filter((l) => l.status !== 'returned');
-        this.pastLoans = loans.filter((l) => l.status === 'returned');
-        this.loading = false;
+        this.currentLoans.set(loans.filter((l) => l.status !== 'returned'));
+        this.pastLoans.set(loans.filter((l) => l.status === 'returned'));
+        this.loading.set(false);
       },
       error: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.toast.error('Could not load your loans.');
       },
     });
@@ -46,4 +46,5 @@ export class MyLoansComponent implements OnInit {
     return loan.status === 'active' && new Date(loan.dueDate) < new Date();
   }
 }
+
 

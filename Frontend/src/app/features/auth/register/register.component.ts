@@ -1,6 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { FormGroup, FormControl, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
@@ -19,31 +19,30 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   styleUrl: './register.component.css',
 })
 export class RegisterComponent {
-  private fb = inject(FormBuilder);
+  private auth = inject(AuthService);
+  private router = inject(Router);
 
-  form = this.fb.group(
+  form = new FormGroup(
     {
-      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', [Validators.required]],
+      name: new FormControl('', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]),
+      email: new FormControl('', [Validators.required, Validators.email]),
+      password: new FormControl('', [Validators.required, Validators.minLength(8)]),
+      confirmPassword: new FormControl('', [Validators.required]),
     },
     { validators: passwordsMatch }
   );
 
-  loading = false;
-  errorMessage = '';
-  showPassword = false;
-  showConfirmPassword = false;
-
-  constructor(private auth: AuthService, private router: Router) {}
+  loading = signal<boolean>(false);
+  errorMessage = signal<string>('');
+  showPassword = signal<boolean>(false);
+  showConfirmPassword = signal<boolean>(false);
 
   togglePasswordVisibility(): void {
-    this.showPassword = !this.showPassword;
+    this.showPassword.update((val) => !val);
   }
 
   toggleConfirmPasswordVisibility(): void {
-    this.showConfirmPassword = !this.showConfirmPassword;
+    this.showConfirmPassword.update((val) => !val);
   }
 
   submit(): void {
@@ -52,19 +51,23 @@ export class RegisterComponent {
       return;
     }
 
-    this.loading = true;
-    this.errorMessage = '';
+    this.loading.set(true);
+    this.errorMessage.set('');
 
-    const { name, email, password } = this.form.getRawValue();
-    this.auth.register({ name: name!.trim(), email: email!.trim(), password: password! }).subscribe({
+    const name = (this.form.get('name')?.value || '').trim();
+    const email = (this.form.get('email')?.value || '').trim();
+    const password = this.form.get('password')?.value || '';
+
+    this.auth.register({ name, email, password }).subscribe({
       next: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.router.navigate(['/']);
       },
       error: (err) => {
-        this.loading = false;
-        this.errorMessage = err.error?.message || 'Could not create account. Please check your information or try again.';
+        this.loading.set(false);
+        this.errorMessage.set(err.error?.message || 'Could not create account. Please check your information or try again.');
       },
     });
   }
 }
+

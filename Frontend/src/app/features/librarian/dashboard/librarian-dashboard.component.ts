@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -33,58 +33,59 @@ export class LibrarianDashboardComponent implements OnInit {
 
   sidebarLinks: SidebarLink[] = this.navigationService.getStaffSidebarLinks();
 
-  books: Book[] = [];
-  loading = true;
+  books = signal<Book[]>([]);
+  loading = signal<boolean>(true);
   searchTerm = '';
 
   // Confirm delete modal state
-  showDeleteModal = false;
-  bookToDelete: Book | null = null;
+  showDeleteModal = signal<boolean>(false);
+  bookToDelete = signal<Book | null>(null);
 
   ngOnInit(): void {
     this.fetchBooks();
   }
 
   fetchBooks(): void {
-    this.loading = true;
+    this.loading.set(true);
     this.bookService.getAll({ search: this.searchTerm || undefined }).subscribe({
       next: (res) => {
-        this.books = res.data.books;
-        this.loading = false;
+        this.books.set(res.data.books);
+        this.loading.set(false);
       },
       error: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.toast.error('Could not load books catalog.');
       },
     });
   }
 
   promptDeleteBook(book: Book): void {
-    this.bookToDelete = book;
-    this.showDeleteModal = true;
+    this.bookToDelete.set(book);
+    this.showDeleteModal.set(true);
   }
 
   cancelDelete(): void {
-    this.showDeleteModal = false;
-    this.bookToDelete = null;
+    this.showDeleteModal.set(false);
+    this.bookToDelete.set(null);
   }
 
   confirmDeleteBook(): void {
-    if (!this.bookToDelete) return;
-    const book = this.bookToDelete;
-    this.showDeleteModal = false;
+    const book = this.bookToDelete();
+    if (!book) return;
+    this.showDeleteModal.set(false);
 
     this.bookService.delete(book._id).subscribe({
       next: () => {
-        this.books = this.books.filter((b) => b._id !== book._id);
+        this.books.set(this.books().filter((b) => b._id !== book._id));
         this.toast.success(`Book "${book.title}" deleted.`);
-        this.bookToDelete = null;
+        this.bookToDelete.set(null);
       },
       error: (err) => {
         this.toast.error(err.error?.message || 'Could not delete this book.');
-        this.bookToDelete = null;
+        this.bookToDelete.set(null);
       },
     });
   }
 }
+
 

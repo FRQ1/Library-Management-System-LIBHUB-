@@ -1,6 +1,6 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BookService } from '../../../core/services/book.service';
 import { BookCategory } from '../../../core/models/book.model';
@@ -30,7 +30,6 @@ const CATEGORY_OPTIONS: BookCategory[] = [
   styleUrl: './book-form.component.css',
 })
 export class BookFormComponent implements OnInit {
-  private fb = inject(FormBuilder);
   private bookService = inject(BookService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -38,29 +37,29 @@ export class BookFormComponent implements OnInit {
 
   categoryOptions = CATEGORY_OPTIONS;
 
-  form = this.fb.group({
-    title: ['', Validators.required],
-    author: ['', Validators.required],
-    isbn: ['', Validators.required],
-    category: ['fiction' as BookCategory, Validators.required],
-    description: [''],
-    totalCopies: [1, [Validators.required, Validators.min(0)]],
+  form = new FormGroup({
+    title: new FormControl('', [Validators.required]),
+    author: new FormControl('', [Validators.required]),
+    isbn: new FormControl('', [Validators.required]),
+    category: new FormControl<BookCategory>('fiction', [Validators.required]),
+    description: new FormControl(''),
+    totalCopies: new FormControl<number>(1, [Validators.required, Validators.min(0)]),
   });
 
-  isEditMode = false;
+  isEditMode = signal<boolean>(false);
   bookId: string | null = null;
   selectedFile: File | null = null;
-  previewUrl: string | null = null;
-  existingCoverImage = '';
+  previewUrl = signal<string | null>(null);
+  existingCoverImage = signal<string>('');
 
-  loading = false;
-  errorMessage = '';
+  loading = signal<boolean>(false);
+  errorMessage = signal<string>('');
 
   ngOnInit(): void {
     this.bookId = this.route.snapshot.paramMap.get('id');
-    this.isEditMode = !!this.bookId;
+    this.isEditMode.set(!!this.bookId);
 
-    if (this.isEditMode && this.bookId) {
+    if (this.isEditMode() && this.bookId) {
       this.bookService.getById(this.bookId).subscribe({
         next: (res) => {
           const book = res.data.book;
@@ -72,10 +71,10 @@ export class BookFormComponent implements OnInit {
             description: book.description || '',
             totalCopies: book.totalCopies,
           });
-          this.existingCoverImage = book.coverImage || '';
+          this.existingCoverImage.set(book.coverImage || '');
         },
         error: () => {
-          this.errorMessage = 'Could not load this book.';
+          this.errorMessage.set('Could not load this book.');
           this.toast.error('Could not load this book.');
         },
       });
@@ -88,23 +87,23 @@ export class BookFormComponent implements OnInit {
 
     if (!file) {
       this.selectedFile = null;
-      this.previewUrl = null;
+      this.previewUrl.set(null);
       return;
     }
 
     const validation = validateBookCoverFile(file);
     if (!validation.isValid) {
-      this.errorMessage = validation.error || 'Invalid file.';
-      this.toast.error(this.errorMessage);
+      this.errorMessage.set(validation.error || 'Invalid file.');
+      this.toast.error(this.errorMessage());
       input.value = '';
       return;
     }
 
-    this.errorMessage = '';
+    this.errorMessage.set('');
     this.selectedFile = file;
 
     const reader = new FileReader();
-    reader.onload = () => (this.previewUrl = reader.result as string);
+    reader.onload = () => this.previewUrl.set(reader.result as string);
     reader.readAsDataURL(this.selectedFile);
   }
 
@@ -114,37 +113,38 @@ export class BookFormComponent implements OnInit {
       return;
     }
 
-    this.loading = true;
-    this.errorMessage = '';
+    this.loading.set(true);
+    this.errorMessage.set('');
 
     const raw = this.form.getRawValue();
     const formData = new FormData();
-    formData.append('title', raw.title!);
-    formData.append('author', raw.author!);
-    formData.append('isbn', raw.isbn!);
-    formData.append('category', raw.category!);
+    formData.append('title', raw.title || '');
+    formData.append('author', raw.author || '');
+    formData.append('isbn', raw.isbn || '');
+    formData.append('category', raw.category || 'fiction');
     formData.append('description', raw.description || '');
-    formData.append('totalCopies', String(raw.totalCopies));
+    formData.append('totalCopies', String(raw.totalCopies ?? 1));
     if (this.selectedFile) {
       formData.append('coverImage', this.selectedFile);
     }
 
-    const request$ = this.isEditMode && this.bookId
+    const request$ = this.isEditMode() && this.bookId
       ? this.bookService.update(this.bookId, formData)
       : this.bookService.create(formData);
 
     request$.subscribe({
       next: () => {
-        this.loading = false;
-        this.toast.success(this.isEditMode ? 'Book updated successfully.' : 'Book added to catalog.');
+        this.loading.set(false);
+        this.toast.success(this.isEditMode() ? 'Book updated successfully.' : 'Book added to catalog.');
         this.router.navigate(['/librarian/books']);
       },
       error: (err) => {
-        this.loading = false;
-        this.errorMessage = err.error?.message || 'Could not save this book.';
-        this.toast.error(this.errorMessage);
+        this.loading.set(false);
+        this.errorMessage.set(err.error?.message || 'Could not save this book.');
+        this.toast.error(this.errorMessage());
       },
     });
   }
 }
+
 

@@ -1,15 +1,11 @@
 # LibHub Frontend
 
-Angular 21 frontend for the LibHub Library Management System. Talks to the
-LibHub backend API at `http://localhost:5000/api/v1` by default (see
-`src/environments/`).
+Angular frontend for the LibHub Library Management System. Talks to the
+LibHub backend API at `/api/v1` (or `http://localhost:5000/api/v1` in standalone dev).
 
-Built with **Angular CLI 21.2.22 / @angular/core 21.2.22**. Uses classic
-zone.js-based change detection (not the newer zoneless mode) so familiar
-patterns - mutating a plain property inside `.subscribe()`, `[(ngModel)]`,
-event bindings - all work exactly as expected. `zone.js` is declared as a
-proper polyfill in `angular.json` (`architect.build.options.polyfills`),
-which both `ng build` and `ng serve` need to resolve it correctly.
+Built with **Angular 22 / @angular/core 22**. Uses modern **zoneless change detection**
+(`provideZonelessChangeDetection()`) without `zone.js` overhead, standalone components,
+Angular Signals, and inject() dependency injection.
 
 ## Setup
 
