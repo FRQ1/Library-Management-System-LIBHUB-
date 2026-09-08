@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Reservation } from '../models/reservation.model';
 import { ApiResponse } from '../models/api-response.model';
+import { Loan } from '../models/loan.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReservationService {
@@ -29,6 +30,10 @@ export class ReservationService {
 
   markReady(id: string): Observable<ApiResponse<{ reservation: Reservation }>> {
     return this.http.patch<ApiResponse<{ reservation: Reservation }>>(`${this.baseUrl}/${id}/ready`, {});
+  }
+
+  fulfill(id: string): Observable<ApiResponse<{ loan: Loan; reservation: Reservation }>> {
+    return this.http.patch<ApiResponse<{ loan: Loan; reservation: Reservation }>>(`${this.baseUrl}/${id}/fulfill`, {});
   }
 
   cancel(id: string): Observable<ApiResponse<{ reservation: Reservation }>> {

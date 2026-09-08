@@ -10,6 +10,7 @@ router.post("/", reservationControllers.createReservation);
 
 router.get("/", restrictTo("librarian", "admin"), reservationControllers.getAllReservations);
 router.patch("/:id/ready", restrictTo("librarian", "admin"), reservationControllers.markReservationReady);
+router.patch("/:id/fulfill", restrictTo("librarian", "admin"), reservationControllers.fulfillReservation);
 
 router.delete("/:id", reservationControllers.cancelReservation);
 

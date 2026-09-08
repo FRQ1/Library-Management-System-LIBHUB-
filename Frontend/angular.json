@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "libhub-frontend-v21": {
+    "libhub-frontend": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -71,10 +71,10 @@
           },
           "configurations": {
             "production": {
-              "buildTarget": "libhub-frontend-v21:build:production"
+              "buildTarget": "libhub-frontend:build:production"
             },
             "development": {
-              "buildTarget": "libhub-frontend-v21:build:development"
+              "buildTarget": "libhub-frontend:build:development"
             }
           },
           "defaultConfiguration": "development"

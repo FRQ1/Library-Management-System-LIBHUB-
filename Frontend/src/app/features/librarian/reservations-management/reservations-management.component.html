@@ -50,6 +50,15 @@
                         <app-icon name="x" [size]="13"></app-icon> Cancel
                       </button>
                     </div>
+                  } @else if (res.status === 'ready') {
+                    <div class="flex gap-sm">
+                      <button class="btn btn-primary btn-sm" (click)="checkOut(res)">
+                        <app-icon name="check" [size]="13"></app-icon> Check Out
+                      </button>
+                      <button class="btn btn-danger btn-sm" (click)="promptCancel(res)">
+                        <app-icon name="x" [size]="13"></app-icon> Cancel
+                      </button>
+                    </div>
                   }
                 </td>
               </tr>

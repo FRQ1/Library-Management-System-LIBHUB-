@@ -67,6 +67,16 @@ export class ReservationsManagementComponent implements OnInit {
     });
   }
 
+  checkOut(reservation: Reservation): void {
+    this.reservationService.fulfill(reservation._id).subscribe({
+      next: () => {
+        this.toast.success('Checked out — the book now shows in the member\'s loans.');
+        this.fetchReservations();
+      },
+      error: (err) => this.toast.error(err.error?.message || 'Could not check out this reservation.'),
+    });
+  }
+
   promptCancel(reservation: Reservation): void {
     this.reservationToCancel.set(reservation);
     this.showCancelModal.set(true);

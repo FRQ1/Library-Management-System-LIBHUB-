@@ -1,5 +1,8 @@
 const Reservation = require("../models/reservation-model");
 const Book = require("../models/book-model");
+const Loan = require("../models/loan-model");
+
+const DEFAULT_LOAN_DAYS = 14;
 
 const createReservation = async (req, res) => {
   try {
@@ -112,6 +115,60 @@ const markReservationReady = async (req, res) => {
   }
 };
 
+const fulfillReservation = async (req, res) => {
+  try {
+    const reservation = await Reservation.findById(req.params.id);
+
+    if (!reservation) {
+      return res.status(404).json({ status: "fail", message: "Reservation not found" });
+    }
+    if (reservation.status !== "ready") {
+      return res.status(400).json({
+        status: "fail",
+        message: "Only reservations marked ready can be checked out",
+      });
+    }
+
+    const book = await Book.findById(reservation.book);
+    if (!book) {
+      return res.status(404).json({ status: "fail", message: "Book not found" });
+    }
+    if (book.availableCopies < 1) {
+      return res.status(400).json({
+        status: "fail",
+        message: "No available copies of this book to check out",
+      });
+    }
+
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + DEFAULT_LOAN_DAYS);
+
+    const loan = await Loan.create({
+      book: reservation.book,
+      member: reservation.member,
+      checkedOutBy: req.user._id,
+      dueDate,
+    });
+
+    book.availableCopies -= 1;
+    await book.save();
+
+    reservation.status = "fulfilled";
+    await reservation.save();
+
+    res.status(200).json({
+      status: "success",
+      message: "Reservation checked out as a loan",
+      data: { loan, reservation },
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+};
+
 const cancelReservation = async (req, res) => {
   try {
     const reservation = await Reservation.findById(req.params.id);
@@ -124,6 +181,13 @@ const cancelReservation = async (req, res) => {
       return res.status(403).json({
         status: "fail",
         message: "You can only cancel your own reservations",
+      });
+    }
+
+    if (reservation.status === "fulfilled" || reservation.status === "cancelled") {
+      return res.status(400).json({
+        status: "fail",
+        message: `This reservation is already ${reservation.status} and cannot be cancelled`,
       });
     }
 
@@ -148,5 +212,6 @@ module.exports = {
   getMyReservations,
   getAllReservations,
   markReservationReady,
+  fulfillReservation,
   cancelReservation,
 };
