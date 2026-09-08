@@ -86,6 +86,8 @@ const updateBook = async (req, res) => {
       return res.status(404).json({ status: "fail", message: "Book not found" });
     }
 
+    const copiesOnLoan = book.totalCopies - book.availableCopies;
+
     if (req.body.category) req.body.category = req.body.category.toLowerCase();
 
     if (req.file) {
@@ -93,6 +95,11 @@ const updateBook = async (req, res) => {
       if (book.coverImage) {
         deleteUploadedFile("books", book.coverImage);
       }
+    }
+
+    if (req.body.totalCopies !== undefined) {
+      const newTotalCopies = Number(req.body.totalCopies);
+      req.body.availableCopies = Math.max(0, newTotalCopies - copiesOnLoan);
     }
 
     Object.assign(book, req.body);
