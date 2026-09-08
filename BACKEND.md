@@ -169,7 +169,7 @@ Plain `express.static` mount over the `uploads/` folder — `GET /api/v1/uploads
 
 ## 7. Known Issues / Follow-ups
 
-- **`availableCopies` isn't resynced on edit.** `updateBook` does `Object.assign(book, req.body)`, so changing `totalCopies` after creation never adjusts `availableCopies` — increasing `totalCopies` doesn't add available stock, and nothing stops `availableCopies` from exceeding the new `totalCopies` on a decrease. Not yet fixed.
+- **`availableCopies` isn't resynced on edit.** `updateBook` does `Object.assign(book, req.body)`, so changing `totalCopies` after creation never adjusts `availableCopies` — increasing `totalCopies` doesn't add available stock, and nothing stops `availableCopies` from exceeding the new `totalCopies` on a decrease [Fixed].
 - **`checkoutBook` doesn't validate `memberId`** actually belongs to a `member`-role account, or cross-check it against an existing reservation for that book. A malformed ID just surfaces as a generic Mongoose CastError (400).
 - `overdue` is a declared loan status that's never persisted — it's always computed live from `dueDate`. Fine as-is, just worth knowing if you add anything that reads `loan.status` directly and expects to see `'overdue'`.
 
