@@ -71,7 +71,7 @@ export class MyReservationsComponent implements OnInit {
         this.fetchReservations();
       },
       error: (err) => {
-        this.toast.error(err.error?.message || 'Could not cancel this reservation.');
+        this.toast.error(err.message || 'Could not cancel this reservation.');
         this.reservationToCancel.set(null);
       },
     });

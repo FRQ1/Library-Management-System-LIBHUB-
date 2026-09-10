@@ -49,7 +49,7 @@ export class LoginComponent {
       },
       error: (err) => {
         this.loading.set(false);
-        this.errorMessage.set(err.error?.message || 'Invalid email or password. Please check your credentials.');
+        this.errorMessage.set(err.message || 'Invalid email or password. Please check your credentials.');
       },
     });
   }

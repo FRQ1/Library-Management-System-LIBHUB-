@@ -63,7 +63,7 @@ export class ReservationsManagementComponent implements OnInit {
         this.toast.success('Reservation marked ready for pickup.');
         this.fetchReservations();
       },
-      error: (err) => this.toast.error(err.error?.message || 'Could not update this reservation.'),
+      error: (err) => this.toast.error(err.message || 'Could not update this reservation.'),
     });
   }
 
@@ -73,7 +73,7 @@ export class ReservationsManagementComponent implements OnInit {
         this.toast.success('Checked out — the book now shows in the member\'s loans.');
         this.fetchReservations();
       },
-      error: (err) => this.toast.error(err.error?.message || 'Could not check out this reservation.'),
+      error: (err) => this.toast.error(err.message || 'Could not check out this reservation.'),
     });
   }
 
@@ -99,7 +99,7 @@ export class ReservationsManagementComponent implements OnInit {
         this.fetchReservations();
       },
       error: (err) => {
-        this.toast.error(err.error?.message || 'Could not cancel this reservation.');
+        this.toast.error(err.message || 'Could not cancel this reservation.');
         this.reservationToCancel.set(null);
       },
     });

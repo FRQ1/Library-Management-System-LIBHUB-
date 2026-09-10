@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Service, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
@@ -8,7 +8,7 @@ import { AuthResponse, User } from '../models/user.model';
 const TOKEN_KEY = 'libhub_token';
 const USER_KEY = 'libhub_user';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class AuthService {
   private readonly baseUrl = `${environment.apiUrl}/auth`;
 
@@ -20,7 +20,8 @@ export class AuthService {
   readonly isLoggedIn = computed(() => !!this.currentUserSignal());
   readonly role = computed(() => this.currentUserSignal()?.role ?? null);
 
-  constructor(private http: HttpClient, private router: Router) {}
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
 
   private readStoredUser(): User | null {
     try {

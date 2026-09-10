@@ -68,7 +68,7 @@ export class BookDetailsComponent implements OnInit {
       error: (err) => {
         this.reserving.set(false);
         this.reserveError.set(true);
-        this.reserveMessage.set(err.error?.message || 'Could not reserve this book.');
+        this.reserveMessage.set(err.message || 'Could not reserve this book.');
         this.toast.error(this.reserveMessage());
       },
     });
@@ -93,7 +93,7 @@ export class BookDetailsComponent implements OnInit {
         this.router.navigate(['/librarian/books']);
       },
       error: (err) => {
-        this.toast.error(err.error?.message || 'Could not delete this book.');
+        this.toast.error(err.message || 'Could not delete this book.');
       },
     });
   }

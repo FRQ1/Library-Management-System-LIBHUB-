@@ -65,7 +65,7 @@ export class RegisterComponent {
       },
       error: (err) => {
         this.loading.set(false);
-        this.errorMessage.set(err.error?.message || 'Could not create account. Please check your information or try again.');
+        this.errorMessage.set(err.message || 'Could not create account. Please check your information or try again.');
       },
     });
   }

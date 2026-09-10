@@ -1,15 +1,15 @@
-import { Injectable } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { User } from '../models/user.model';
 import { ApiResponse } from '../models/api-response.model';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class UserService {
   private readonly baseUrl = `${environment.apiUrl}/users`;
 
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   // --- own profile ---
   getMe(): Observable<ApiResponse<{ user: User }>> {

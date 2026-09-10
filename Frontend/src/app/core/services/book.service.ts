@@ -1,15 +1,15 @@
-import { Injectable } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Book } from '../models/book.model';
 import { ApiResponse } from '../models/api-response.model';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class BookService {
   private readonly baseUrl = `${environment.apiUrl}/books`;
 
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   getAll(params?: { search?: string; category?: string }): Observable<ApiResponse<{ books: Book[] }>> {
     let httpParams = new HttpParams();

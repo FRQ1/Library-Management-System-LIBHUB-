@@ -4,23 +4,13 @@ import { FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BookService } from '../../../core/services/book.service';
 import { BookCategory } from '../../../core/models/book.model';
+import { BOOK_CATEGORIES } from '../../../core/constants/book-constants';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { BookCoverPipe } from '../../../core/pipes/media-url.pipe';
 import { validateBookCoverFile } from '../../../core/utils/file-validation';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 
-const CATEGORY_OPTIONS: BookCategory[] = [
-  'fiction',
-  'science',
-  'history',
-  'biography',
-  'technology',
-  'fantasy',
-  'mystery',
-  'children',
-  'comics',
-  'other',
-];
+const CATEGORY_OPTIONS: BookCategory[] = BOOK_CATEGORIES;
 
 @Component({
   selector: 'app-book-form',
@@ -140,7 +130,7 @@ export class BookFormComponent implements OnInit {
       },
       error: (err) => {
         this.loading.set(false);
-        this.errorMessage.set(err.error?.message || 'Could not save this book.');
+        this.errorMessage.set(err.message || 'Could not save this book.');
         this.toast.error(this.errorMessage());
       },
     });

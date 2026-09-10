@@ -25,13 +25,20 @@
   text-decoration: none;
 }
 .brand-crest {
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.25);
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
+.brand-crest img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  display: block;
+}
+
 .navbar-logo:hover .brand-crest {
   transform: scale(1.06) rotate(-2deg);
 }

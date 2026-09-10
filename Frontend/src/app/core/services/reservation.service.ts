@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -6,11 +6,11 @@ import { Reservation } from '../models/reservation.model';
 import { ApiResponse } from '../models/api-response.model';
 import { Loan } from '../models/loan.model';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class ReservationService {
   private readonly baseUrl = `${environment.apiUrl}/reservations`;
 
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   getAll(status?: string): Observable<ApiResponse<{ reservations: Reservation[] }>> {
     let params = new HttpParams();

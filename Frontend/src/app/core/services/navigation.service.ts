@@ -1,8 +1,8 @@
-import { Injectable, inject } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import { AuthService } from './auth.service';
 import { SidebarLink } from '../../shared/components/sidebar/sidebar.component';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class NavigationService {
   private auth = inject(AuthService);
 

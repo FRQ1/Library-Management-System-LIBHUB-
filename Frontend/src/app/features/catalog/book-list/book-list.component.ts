@@ -6,19 +6,11 @@ import { BookService } from '../../../core/services/book.service';
 import { Book, BookCategory } from '../../../core/models/book.model';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { BookCoverPipe } from '../../../core/pipes/media-url.pipe';
+import { BOOK_CATEGORIES, BOOK_CATEGORY_LABELS } from '../../../core/constants/book-constants';
 
 const CATEGORIES: { value: BookCategory | ''; label: string }[] = [
   { value: '', label: 'All' },
-  { value: 'fiction', label: 'Fiction' },
-  { value: 'science', label: 'Science' },
-  { value: 'history', label: 'History' },
-  { value: 'biography', label: 'Biography' },
-  { value: 'technology', label: 'Technology' },
-  { value: 'fantasy', label: 'Fantasy' },
-  { value: 'mystery', label: 'Mystery' },
-  { value: 'children', label: 'Children' },
-  { value: 'comics', label: 'Comics' },
-  { value: 'other', label: 'Other' },
+  ...BOOK_CATEGORIES.map((value) => ({ value, label: BOOK_CATEGORY_LABELS[value] })),
 ];
 
 @Component({

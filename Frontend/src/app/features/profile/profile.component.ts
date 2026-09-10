@@ -80,7 +80,7 @@ export class ProfileComponent implements OnInit {
       error: (err) => {
         this.profileLoading.set(false);
         this.profileError.set(true);
-        this.profileMessage.set(err.error?.message || 'Could not update your profile.');
+        this.profileMessage.set(err.message || 'Could not update your profile.');
         this.toast.error(this.profileMessage());
       },
     });
@@ -111,7 +111,7 @@ export class ProfileComponent implements OnInit {
         error: (err) => {
           this.passwordLoading.set(false);
           this.passwordError.set(true);
-          this.passwordMessage.set(err.error?.message || 'Could not change your password.');
+          this.passwordMessage.set(err.message || 'Could not change your password.');
           this.toast.error(this.passwordMessage());
         },
       });
@@ -166,7 +166,7 @@ export class ProfileComponent implements OnInit {
       error: (err) => {
         this.pictureLoading.set(false);
         this.pictureError.set(true);
-        this.pictureMessage.set(err.error?.message || 'Could not upload your picture.');
+        this.pictureMessage.set(err.message || 'Could not upload your picture.');
         this.toast.error(this.pictureMessage());
       },
     });
@@ -192,7 +192,7 @@ export class ProfileComponent implements OnInit {
       },
       error: (err) => {
         this.deactivating.set(false);
-        this.toast.error(err.error?.message || 'Could not deactivate your account.');
+        this.toast.error(err.message || 'Could not deactivate your account.');
       },
     });
   }

@@ -96,7 +96,7 @@ export class LoansManagementComponent implements OnInit {
         },
         error: (err) => {
           this.checkoutLoading.set(false);
-          this.checkoutError.set(err.error?.message || 'Could not check out this book.');
+          this.checkoutError.set(err.message || 'Could not check out this book.');
         },
       });
   }
@@ -107,7 +107,7 @@ export class LoansManagementComponent implements OnInit {
         this.toast.success('Loan renewed successfully.');
         this.fetchLoans();
       },
-      error: (err) => this.toast.error(err.error?.message || 'Could not renew this loan.'),
+      error: (err) => this.toast.error(err.message || 'Could not renew this loan.'),
     });
   }
 
@@ -133,7 +133,7 @@ export class LoansManagementComponent implements OnInit {
         this.fetchLoans();
       },
       error: (err) => {
-        this.toast.error(err.error?.message || 'Could not process this return.');
+        this.toast.error(err.message || 'Could not process this return.');
         this.loanToReturn.set(null);
       },
     });

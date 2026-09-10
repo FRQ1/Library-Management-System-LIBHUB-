@@ -23,7 +23,7 @@ Three role-based experiences share one app:
 | Icons | Custom inline-SVG `IconComponent` (no icon library dependency) |
 | Notifications / dialogs | `ToastService` + `ConfirmModalComponent` (native `alert`/`confirm` are not used) |
 | Media | `BookCoverPipe` / `UserAvatarPipe` for resolving uploaded file paths |
-| Dev-server proxy | `proxy.conf.json` forwards `/api/v1` → `http://localhost:5000` so the app can call relative API paths with no CORS friction in dev |
+| Dev API access | Calls `http://localhost:5000/api/v1` directly (`environment.development.ts`) relying on the backend's `cors()` for the `localhost:4200` origin — no dev-server proxy. This matches the course reference project's pattern, which also has no `proxy.conf.json`/`environments` abstraction and hardcodes the backend URL. |
 
 ---
 
@@ -37,11 +37,14 @@ Frontend/src/
 │   ├── app.ts / app.html / app.css # Root shell: navbar, toast container, router-outlet
 │   │
 │   ├── core/
+│   │   ├── constants/
+│   │   │   └── book-constants.ts   # BOOK_CATEGORIES, BOOK_CATEGORY_LABELS — single source of truth
 │   │   ├── guards/
 │   │   │   ├── auth.guard.ts       # authGuard — redirects to /login if not authenticated
 │   │   │   └── role.guard.ts       # roleGuard(allowedRoles[]) — factory, checks auth + role
 │   │   ├── interceptors/
-│   │   │   └── auth.interceptor.ts # Attaches Bearer token to outgoing requests
+│   │   │   ├── auth.interceptor.ts        # Attaches Bearer token to outgoing requests
+│   │   │   └── error-handle.interceptor.ts # Unwraps HttpErrorResponse into a plain Error(message)
 │   │   ├── models/                 # book / loan / reservation / user / api-response interfaces
 │   │   ├── pipes/
 │   │   │   └── media-url.pipe.ts   # BookCoverPipe, UserAvatarPipe
@@ -83,7 +86,7 @@ Frontend/src/
 │
 ├── environments/
 │   ├── environment.ts              # production
-│   └── environment.development.ts  # apiUrl: '/api/v1' (routed through proxy.conf.json in dev)
+│   └── environment.development.ts  # apiUrl: 'http://localhost:5000/api/v1' (hardcoded, relies on backend CORS — no dev proxy)
 ├── index.html
 ├── main.ts
 └── styles.css
@@ -92,6 +95,8 @@ Frontend/src/
 ---
 
 ## 4. Core Services
+
+All services use the **`@Service()`** decorator (Angular 22's leaner alternative to `@Injectable({ providedIn: 'root' })` for root-singleton services), and inject their own dependencies with `inject()` rather than constructor parameters — `@Service()` classes don't support constructor DI.
 
 ### 4.1 `AuthService`
 Signal-based (`signal`/`computed`, not `BehaviorSubject`). `currentUser`, `isLoggedIn`, `role` are computed signals backed by `localStorage` (`libhub_token`, `libhub_user`) so a page refresh keeps the session. `login()`/`register()` call the backend and populate session state via `tap`; `logout()` clears storage and navigates to `/login`.
@@ -111,6 +116,9 @@ Admin: `getAll(role?)`, `getById`, `updateStatus(id, isActive: boolean)`, `updat
 
 ### 4.6 `ToastService`
 In-app toast queue (success/error/info), replaces `window.alert`.
+
+### 4.7 Error handling convention
+`error-handle.interceptor.ts` unwraps `HttpErrorResponse` once, centrally, and re-throws a plain `Error` whose `.message` is the backend's message (or `undefined` if the backend didn't send one). Every component's `.subscribe({ error: (err) => ... })` callback reads `err.message || '<action-specific fallback>'` — **not** `err.error?.message`. Keep new error callbacks consistent with this; reaching into `err.error` directly will be `undefined` post-interceptor.
 
 ---
 

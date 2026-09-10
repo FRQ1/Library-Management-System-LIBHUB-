@@ -1,15 +1,15 @@
-import { Injectable } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Loan } from '../models/loan.model';
 import { ApiResponse } from '../models/api-response.model';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class LoanService {
   private readonly baseUrl = `${environment.apiUrl}/loans`;
 
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   getAll(status?: string): Observable<ApiResponse<{ loans: Loan[] }>> {
     let params = new HttpParams();

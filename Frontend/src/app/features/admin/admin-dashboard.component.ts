@@ -111,7 +111,7 @@ export class AdminDashboardComponent implements OnInit {
         this.toast.success(`User status updated.`);
         this.fetchUsers();
       },
-      error: (err) => this.toast.error(err.error?.message || 'Could not update this user.'),
+      error: (err) => this.toast.error(err.message || 'Could not update this user.'),
     });
   }
 
@@ -125,7 +125,7 @@ export class AdminDashboardComponent implements OnInit {
         this.toast.success(`User role changed to ${role}.`);
         this.fetchUsers();
       },
-      error: (err) => this.toast.error(err.error?.message || 'Could not update this user role.'),
+      error: (err) => this.toast.error(err.message || 'Could not update this user role.'),
     });
   }
 
@@ -155,7 +155,7 @@ export class AdminDashboardComponent implements OnInit {
         this.userToDelete.set(null);
       },
       error: (err) => {
-        this.toast.error(err.error?.message || 'Could not delete this user.');
+        this.toast.error(err.message || 'Could not delete this user.');
         this.userToDelete.set(null);
       },
     });

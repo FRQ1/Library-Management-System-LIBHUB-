@@ -81,7 +81,7 @@ export class LibrarianDashboardComponent implements OnInit {
         this.bookToDelete.set(null);
       },
       error: (err) => {
-        this.toast.error(err.error?.message || 'Could not delete this book.');
+        this.toast.error(err.message || 'Could not delete this book.');
         this.bookToDelete.set(null);
       },
     });
